@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+
+
+
+@font-face {
+  font-family: 'Playpen Sans Arabic';
+  src: url('/fonts/PlaypenSansArabic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+@font-face {
+  font-family: 'Lemonada';
+  src: url('/fonts/Lemonada.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'BalooBhaijaan2-Bold';
+  src: url('/fonts/BalooBhaijaan2-Bold.ttf') format('truetype');
+  font-weight: 70;
+  font-style: extra-bold;
+}
+
+
+
+/* Cairo Thin */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Thin.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+}
+
+/* Cairo ExtraLight */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-ExtraLight.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* Cairo Light */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* Cairo Regular */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Cairo Medium */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+/* Cairo SemiBold */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* Cairo Bold */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Cairo ExtraBold */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+}
+
+/* Cairo Black */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+
+
+
+body {
+  font-family: 'Playpen Sans Arabic', sans-serif;
+}
+
