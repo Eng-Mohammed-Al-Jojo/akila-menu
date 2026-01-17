@@ -218,7 +218,7 @@ const Popup: React.FC<Props> = ({
                 }
               />
 
-              <input
+              {/* <input
                 type="number"
                 placeholder="سعر TW (اختياري)"
                 className="w-full p-2 border rounded-xl mb-4"
@@ -229,7 +229,7 @@ const Popup: React.FC<Props> = ({
                     priceTw: e.target.value,
                   })
                 }
-              />
+              /> */}
 
               <div className="flex justify-end gap-2">
                 <button

@@ -5,7 +5,7 @@ export default function MenuPage() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen flex flex-col bg-[#FFFFFF] text-[#231F20] font-sans"
+      className="min-h-screen flex flex-col bg-[#FFFFFF] text-[#231F20] font-[Cairo]"
     >
       {/* Logo */}
       <div className="flex justify-center py-10">

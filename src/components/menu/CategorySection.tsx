@@ -13,9 +13,9 @@ export default function CategorySection({ category, items }: Props) {
       <div className="mb-8 md:mb-10 flex items-center justify-start gap-4">
         <h2
           className="
-            text-[clamp(1.2rem,5vw,2.2rem)]
-            font-[BalooBhaijaan2-Bold] font-extra-bold
-            text-[#B22271]
+            text-3xl md:text-5xl
+            font-[Cairo] font-extrabold
+            text-[#B22271] 
             uppercase tracking-widest
             drop-shadow-sm
             text-left

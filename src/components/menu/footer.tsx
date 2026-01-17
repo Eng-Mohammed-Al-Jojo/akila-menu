@@ -53,7 +53,7 @@ export default function Footer() {
         <div className="flex gap-4">
           {[
             { href: "https://wa.me/+972592270295", icon: <FaWhatsapp /> },
-            { href: "https://www.instagram.com/akila_coffee?igsh=ZzV4Z285MGV6Zzg1", icon: <FaInstagram /> },
+            { href: "https://www.instagram.com/akila_coffee?igsh=MWNodDN3N29pdWlvbg==", icon: <FaInstagram /> },
             { href: "https://www.facebook.com/share/1GXQRH6J2u/?mibextid=wwXIfr", icon: <FaFacebookF /> },
             { href: "https://www.tiktok.com/@akilacoffe?_r=1&_t=ZS-937nI15QJYg", icon: <FaTiktok /> },
           ].map((item, i) => (

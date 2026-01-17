@@ -87,7 +87,7 @@ export default function Menu() {
             <div className="absolute inset-0 rounded-full border-4 border-t-transparent border-[#d369b3] animate-spin" />
           </div>
 
-          <p className="text-[#B22271] text-xl md:text-3xl tracking-widest animate-pulse font-[ArefRuqaa]">
+          <p className="text-[#B22271] text-xl md:text-3xl tracking-widest animate-pulse font-[Cairo] font-extrabold">
             يتم تحضير القائمة...
           </p>
         </div>
@@ -107,7 +107,7 @@ export default function Menu() {
           />
 
 
-          <p className="text-xl md:text-2xl font-[Cairo] text-gray-500">
+          <p className="text-xl md:text-2xl font-[Cairo] font-bold text-gray-500">
             انتظرونا، يتم تجهيز القائمة قريبًا
           </p>
 
