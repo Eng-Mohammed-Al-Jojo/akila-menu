@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import { ref, onValue, push, remove, update  } from "firebase/database";
+import { ref, onValue, push, remove, update } from "firebase/database";
 import { FiDownload, FiUpload } from "react-icons/fi";
 
 import {
@@ -32,7 +32,6 @@ export default function Admin() {
   const [popup, setPopup] = useState<PopupState>({ type: null });
   const [resetPasswordPopup, setResetPasswordPopup] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  // ✅ تعديل النوع هنا: itemIngredients اختياري
   const [editItemValues, setEditItemValues] = useState<{
     itemName: string;
     itemPrice: string;
@@ -47,10 +46,8 @@ export default function Admin() {
     itemIngredients: "",
   });
   const [editItemId, setEditItemId] = useState("");
-
-// ======== STATE للـ Toast ========
-const [toast, setToast] = useState("");
-const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // ================= AUTH LISTENER =================
   useEffect(() => {
@@ -108,48 +105,35 @@ const [loading, setLoading] = useState(false);
   };
 
   // ================= CATEGORY =================
-const addCategory = async () => {
-  // ✅ تحقق إذا الحقل فاضي
-  if (!newCategoryName.trim()) {
-    setToast("⚠️  يجب إدخال اسم القسم أولاً");
-    setTimeout(() => setToast(""), 3000);
-    return;
-  }
-
-  const newName = newCategoryName.trim();
-
-  // تحقق من وجود القسم مسبقاً (تجاهل الحالة)
-  const exists = Object.values(categories).some(
-    (cat: any) => cat.name.trim().toLowerCase() === newName.toLowerCase()
-  );
-
-  if (exists) {
-    setToast(`القسم "${newName}" موجود مسبقاً`);
-    setTimeout(() => setToast(""), 3000);
-    return;
-  }
-
-  await push(ref(db, "categories"), {
-    name: newName,
-    createdAt: Date.now(),
-  });
-
-  // فرغ الانبت بعد الإضافة
-  setNewCategoryName("");
-  setPopup({ type: null });
-
-  setToast(`تم إضافة القسم "${newName}" بنجاح ✅`);
-  setTimeout(() => setToast(""), 4000);
-};
-
-
+  const addCategory = async () => {
+    if (!newCategoryName.trim()) {
+      setToast("⚠️  يجب إدخال اسم القسم أولاً");
+      setTimeout(() => setToast(""), 3000);
+      return;
+    }
+    const newName = newCategoryName.trim();
+    const exists = Object.values(categories).some(
+      (cat: any) => cat.name.trim().toLowerCase() === newName.toLowerCase()
+    );
+    if (exists) {
+      setToast(`القسم "${newName}" موجود مسبقاً`);
+      setTimeout(() => setToast(""), 3000);
+      return;
+    }
+    await push(ref(db, "categories"), {
+      name: newName,
+      createdAt: Date.now(),
+    });
+    setNewCategoryName("");
+    setPopup({ type: null });
+    setToast(`تم إضافة القسم "${newName}" بنجاح ✅`);
+    setTimeout(() => setToast(""), 4000);
+  };
 
   const deleteCategory = async (id: string) => {
     await remove(ref(db, `categories/${id}`));
     Object.keys(items).forEach((itemId) => {
-      if (items[itemId].categoryId === id) {
-        remove(ref(db, `items/${itemId}`));
-      }
+      if (items[itemId].categoryId === id) remove(ref(db, `items/${itemId}`));
     });
     setPopup({ type: null });
     setToast("  تم حذف القسم بنجاح ✅");
@@ -161,7 +145,7 @@ const addCategory = async () => {
     if (!popup.id) return;
     await remove(ref(db, `items/${popup.id}`));
     setPopup({ type: null });
-      setToast("  تم حذف الصنف بنجاح ✅");
+    setToast("  تم حذف الصنف بنجاح ✅");
     setTimeout(() => setToast(""), 4000);
   };
 
@@ -172,8 +156,7 @@ const addCategory = async () => {
       price: editItemValues.itemPrice,
       priceTw: editItemValues.priceTw || "",
       categoryId: editItemValues.selectedCategory,
-      ingredients: editItemValues.itemIngredients || "", // ✅ هنا لازم تضيف المكونات
-
+      ingredients: editItemValues.itemIngredients || "",
     });
     setPopup({ type: null });
     setEditItemId("");
@@ -182,131 +165,124 @@ const addCategory = async () => {
       itemPrice: "",
       priceTw: "",
       selectedCategory: "",
-      itemIngredients:  "", // ✅ إضافة المكونات
-
+      itemIngredients: "",
     });
     setToast("  تم التعديل بنجاح ✅");
     setTimeout(() => setToast(""), 4000);
-
-
   };
-// ================= EXPORT EXCEL =================
-const exportToExcel = async () => {
-  if (!categories || !items) {
-    alert("البيانات لم يتم تحميلها بعد!");
-    return;
-  }
 
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Items");
-
-  // الأعمدة تشمل كل الحقول
-  sheet.columns = [
-    { header: "الاسم", key: "name", width: 30 },
-    { header: "السعر", key: "price", width: 15 },
-    { header: "سعر TW", key: "priceTw", width: 15 },
-    { header: "القسم", key: "categoryName", width: 30 },
-    { header: "المكونات", key: "ingredients", width: 40 },
-  ];
-
-  // إضافة البيانات
-  Object.values(items).forEach((item: any) => {
-    const categoryName = categories[item.categoryId]?.name ?? "غير محدد";
-    sheet.addRow({
-      name: item.name,
-      price: item.price,
-      priceTw: item.priceTw || "",
-      categoryName,
-      ingredients: item.ingredients || "",
-    });
-  });
-
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
-
-  saveAs(blob, "akila-menu.xlsx");
-};
-
-// ================= IMPORT EXCEL =================
-const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  setLoading(true);
-
-  try {
-    const workbook = new ExcelJS.Workbook();
-    const buffer = await file.arrayBuffer();
-    await workbook.xlsx.load(buffer);
-
-    const sheet = workbook.getWorksheet(1);
-    if (!sheet) {
-      setToast("ملف غير صالح");
-      setLoading(false);
+  // ================= EXPORT EXCEL =================
+  const exportToExcel = async () => {
+    if (!categories || !items) {
+      alert("البيانات لم يتم تحميلها بعد!");
       return;
     }
-
-    // خريطة الأقسام: اسم القسم → id
-    const categoryMap: Record<string, string> = {};
-    Object.entries(categories).forEach(([id, cat]: any) => {
-      categoryMap[cat.name.trim().toLowerCase()] = id;
-    });
-
-    const rows: any[] = [];
-    sheet.eachRow((row, index) => {
-      if (index === 1) return; // تخطي Header
-      rows.push({
-        name: row.getCell(1).value?.toString().trim() || "",
-        price: row.getCell(2).value?.toString().trim() || "",
-        priceTw: row.getCell(3).value?.toString().trim() || "",
-        categoryName: row.getCell(4).value?.toString().trim() || "",
-        ingredients: row.getCell(5).value?.toString().trim() || "",
-      });
-    });
-
-    let addedCount = 0;
-    for (const item of rows) {
-      if (!item.name || !item.categoryName) continue;
-
-      const categoryId = categoryMap[item.categoryName.toLowerCase()];
-      if (!categoryId) continue; // إذا القسم غير موجود، تجاهل
-
-      // تحقق من التكرار
-      const exists = Object.values(items).some(
-        (i: any) =>
-          i.name.trim().toLowerCase() === item.name.toLowerCase() &&
-          i.categoryId === categoryId
-      );
-      if (exists) continue;
-
-      await push(ref(db, "items"), {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Items");
+    sheet.columns = [
+      { header: "الاسم", key: "name", width: 30 },
+      { header: "السعر", key: "price", width: 15 },
+      { header: "سعر TW", key: "priceTw", width: 15 },
+      { header: "القسم", key: "categoryName", width: 30 },
+      { header: "المكونات", key: "ingredients", width: 40 },
+    ];
+    Object.values(items).forEach((item: any) => {
+      const categoryName = categories[item.categoryId]?.name ?? "غير محدد";
+      sheet.addRow({
         name: item.name,
         price: item.price,
         priceTw: item.priceTw || "",
-        categoryId,
+        categoryName,
         ingredients: item.ingredients || "",
-        createdAt: Date.now(),
       });
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, "akila-menu.xlsx");
+  };
 
-      addedCount++;
+  // ================= IMPORT EXCEL =================
+  const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true);
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const buffer = await file.arrayBuffer();
+      await workbook.xlsx.load(buffer);
+      const sheet = workbook.getWorksheet(1);
+      if (!sheet) {
+        setToast("ملف غير صالح");
+        setLoading(false);
+        return;
+      }
+      const categoryMap: Record<string, string> = {};
+      Object.entries(categories).forEach(([id, cat]: any) => {
+        categoryMap[cat.name.trim().toLowerCase()] = id;
+      });
+      const rows: any[] = [];
+      sheet.eachRow((row, index) => {
+        if (index === 1) return;
+        rows.push({
+          name: row.getCell(1).value?.toString().trim() || "",
+          price: row.getCell(2).value?.toString().trim() || "",
+          priceTw: row.getCell(3).value?.toString().trim() || "",
+          categoryName: row.getCell(4).value?.toString().trim() || "",
+          ingredients: row.getCell(5).value?.toString().trim() || "",
+        });
+      });
+      let addedCount = 0;
+      for (const item of rows) {
+        if (!item.name || !item.categoryName) continue;
+        const categoryId = categoryMap[item.categoryName.toLowerCase()];
+        if (!categoryId) continue;
+        const exists = Object.values(items).some(
+          (i: any) =>
+            i.name.trim().toLowerCase() === item.name.toLowerCase() &&
+            i.categoryId === categoryId
+        );
+        if (exists) continue;
+        await push(ref(db, "items"), {
+          name: item.name,
+          price: item.price,
+          priceTw: item.priceTw || "",
+          categoryId,
+          ingredients: item.ingredients || "",
+          createdAt: Date.now(),
+        });
+        addedCount++;
+      }
+      if (addedCount > 0) setToast(`تم إضافة ${addedCount} صنف جديد ✅`);
+      else setToast("القائمة محدثة بالفعل ✅");
+    } catch (err) {
+      console.error(err);
+      setToast("حدث خطأ أثناء الاستيراد ❌");
+    } finally {
+      setLoading(false);
+      e.target.value = "";
+      setTimeout(() => setToast(""), 4000);
     }
+  };
 
-    if (addedCount > 0) {
-      setToast(`تم إضافة ${addedCount} صنف جديد ✅`);
-    } else {
-      setToast("القائمة محدثة بالفعل ✅");
-    }
-  } catch (err) {
-    console.error(err);
-    setToast("حدث خطأ أثناء الاستيراد ❌");
-  } finally {
-    setLoading(false);
-    e.target.value = "";
+  // ================= EXPORT JSON =================
+  const exportToJSON = () => {
+    const data = {
+      categories: categories,
+      items: items,
+      meta: { version: "1.0", exportedAt: Date.now() },
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "menu-data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    setToast("📦 تم تصدير ملف JSON بنجاح");
     setTimeout(() => setToast(""), 4000);
-  }
-};
+  };
 
 
   // ================= LOGIN UI =================
@@ -390,50 +366,51 @@ const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
   // ================= ADMIN PANEL =================
   return (
     <div className="min-h-screen w-full bg-[#0F0F0F] flex justify-center py-5 md:p-6" dir="rtl">
-        {/* ======== TOAST ======== */}
-    {toast && (
-      <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#B22271] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
-        {toast}
-      </div>
-    )}
-
-    {/* ======== LOADER ======== */}
-    {loading && (
-      <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-40">
-        <div className="bg-white p-6 rounded-xl shadow-lg text-black font-bold">
-          جاري تحميل البيانات...
+      {toast && (
+        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#B22271] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
+          {toast}
         </div>
-      </div>
-    )}
-      <input
-        type="file"
-        accept=".xlsx"
-        id="excelUpload"
-        hidden
-        onChange={importFromExcel}
-      />
+      )}
+      {loading && (
+        <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-40">
+          <div className="bg-white p-6 rounded-xl shadow-lg text-black font-bold">
+            جاري تحميل البيانات...
+          </div>
+        </div>
+      )}
+
+      {/* Inputs مخفية للملفات */}
+      <input type="file" accept=".xlsx" id="excelUpload" hidden onChange={importFromExcel} />
 
       <div className="w-full max-w-7xl px-8 sm:px-8 md:px-24">
         <div className="flex justify-between items-center mb-6 flex-wrap">
           <h1 className="text-2xl font-bold text-[#B22271]">لوحة تحكم عكيلة</h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {/* Excel Buttons */}
             <button
               onClick={exportToExcel}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600 text-white font-bold hover:bg-green-500 transition hover:cursor-pointer"
             >
-                            <FiUpload size={18} />
-
-               
+              <FiUpload size={18} />
             </button>
-
             <button
               onClick={() => document.getElementById("excelUpload")?.click()}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition hover:cursor-pointer"
             >
-                            <FiDownload size={18} />
-
-               
+              <FiDownload size={18} />
             </button>
+
+            {/* JSON Buttons */}
+            <button
+              onClick={exportToJSON}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#B22271] text-white font-bold hover:bg-[#b64d87] transition hover:cursor-pointer"
+            >
+              نسخة الأوفلاين
+              <FiUpload size={18} />
+            </button>
+       
+
+            {/* Logout */}
             <button
               onClick={() => setPopup({ type: "logout" })}
               className="px-4 py-2 rounded-xl font-bold bg-[#d60208] text-white flex items-center gap-1 hover:text-black hover:bg-[#d2343a] hover:cursor-pointer"
@@ -443,15 +420,15 @@ const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
           </div>
         </div>
 
-          <CategorySection
-            categories={categories}
-            items={items}
-            setPopup={setPopup}
-            newCategoryName={newCategoryName}
-            setNewCategoryName={setNewCategoryName}
-          />     
-          
-         <ItemSection
+        <CategorySection
+          categories={categories}
+          items={items}
+          setPopup={setPopup}
+          newCategoryName={newCategoryName}
+          setNewCategoryName={setNewCategoryName}
+        />
+
+        <ItemSection
           categories={categories}
           items={items}
           popup={popup}
@@ -466,8 +443,7 @@ const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   itemPrice: item.price,
                   priceTw: item.priceTw || "",
                   selectedCategory: item.categoryId,
-                  itemIngredients: item.ingredients || "", // ✅ إضافة المكونات
-
+                  itemIngredients: item.ingredients || "",
                 });
               }
             }
@@ -491,8 +467,8 @@ const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
           resetMessage={resetMessage}
           handleResetPassword={handleResetPassword}
           logout={logout}
-        />
-      </div>
-    </div>
-  );
-}
+          />
+          </div>
+          </div>
+          );
+          }

@@ -1,0 +1,35 @@
+{
+  "categories": {
+    "-OjCA_T2L7PMTQ0Ruoe9": {
+      "createdAt": 1768673925213,
+      "name": "عصائر طبيعية"
+    },
+    "-OjCAfBVhhQcZziLusmw": {
+      "createdAt": 1768673948667,
+      "name": "براد طبيعي"
+    }
+  },
+  "items": {
+    "-OjCArjFm5JPZWQk9uD0": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1768674000043,
+      "ingredients": "",
+      "name": "ليمون ونعناع",
+      "price": "15,20,25",
+      "priceTw": "",
+      "visible": true
+    },
+    "-OjGB8I1wv9aI6gH9nvS": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1768741179958,
+      "ingredients": "",
+      "name": "جوافة",
+      "price": "8,12,15",
+      "visible": true
+    }
+  },
+  "meta": {
+    "version": "1.0",
+    "exportedAt": 1768742793404
+  }
+}
