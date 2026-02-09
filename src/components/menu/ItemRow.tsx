@@ -81,7 +81,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
           {hasIngredients && (
             <p
               className={`
-                text-[11px] sm:text-xs text-gray-600 line-clamp-2 text-center
+                text-[11px] sm:text-xs text-gray-500 line-clamp-2 text-center
                 ${unavailable ? "line-through" : ""}
               `}
             >
@@ -107,7 +107,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
               ${unavailable ? "opacity-50 line-through" : ""}
             `}
                   >
-                    <span className="text-md font-extrabold text-[#B22271]">
+                    <span className="text-md font-extrabold text-[#b3aa07]">
                       {price}₪
                     </span>
 
@@ -137,8 +137,8 @@ export default function ItemRow({ item, orderSystem }: Props) {
               })
               : (
                 // ===== عرض الأسعار جنب بعض بالفاصلة إذا النظام غير مفعل =====
-                <p className="text-md font-extrabold text-[#B22271] text-center">
-                  {prices.map(p => p.trim() + "₪").join(" || ")}
+                <p className="text-sm md:text:lg font-extrabold text-[#b3aa07] text-center">
+                  {prices.map(p => p.trim() + "₪").join(" | ")}
                 </p>
               )
             }

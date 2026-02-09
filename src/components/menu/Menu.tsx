@@ -206,23 +206,54 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
     }
   }, [availableCategories, items, activeCatId]);
 
-  /* ================= Loading Page ================= */
+  {/* ================= Loading Page ================= */ }
   if (loading) {
     return (
-      <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black overflow-hidden">
-        <div className="absolute inset-0 bg-[#B22271]/10 blur-2xl animate-bg-pulse" />
-        <div className="relative z-10 flex flex-col items-center gap-8 animate-loader-fade">
-          <div className="relative">
-            <div className="absolute inset-[-20px] rounded-full bg-[#B22271]/30 blur-2xl animate-halo" />
-            <div className="w-32 h-32 rounded-full bg-linear-to-br from-[#B22271] to-[#B22271]
-              flex items-center justify-center shadow-2xl shadow-black/70 animate-logo-float">
-              <img src="/logo.png" alt="Restaurant Logo" className="w-20 h-20 object-contain" />
-            </div>
+      <div className="fixed inset-0 z-9999 flex items-center justify-center bg-white">
+
+        <div className="relative flex items-center justify-center">
+
+          {/* الحلقة الهادئة */}
+          <div
+            className="
+            absolute w-96 h-96 rounded-full
+            border border-[#B22271]/40
+            animate-spin
+            [animation-duration:8s]
+          "
+          />
+
+          {/* حلقة داخلية أخف */}
+          <div
+            className="
+            absolute w-80 h-80 rounded-full
+            border border-[#B22271]/20
+            animate-spin
+            [animation-duration:14s]
+            [animation-direction:reverse]
+          "
+          />
+
+          {/* اللوجو */}
+          <div
+            className="
+            relative z-10 w-72 h-72 rounded-full
+            flex items-center justify-center
+          "
+          >
+            <img
+              src="/logo_akila.png"
+              alt="Logo"
+              className="w-72 h-72 object-contain animate-pulse "
+            />
           </div>
+
         </div>
       </div>
     );
   }
+
+
 
   /* ================= Render ================= */
   return (
@@ -239,16 +270,17 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
       {/* ===== Tabs الأقسام ===== */}
       <div className="top-0 z-30 bg-inherit py-3">
         <div className="flex gap-2 px-3 items-center justify-center flex-wrap">
+
           {/* زر عرض الكل */}
           <button
             onClick={() => setActiveCatId("all")}
             className={`
         px-5 py-2 rounded-full whitespace-nowrap
-        font-bold text-sm md:text-base
-        border transition-all duration-300 ease-out
+        font-bold text-base md:text-lg
+        border transition-colors duration-300 ease-out
         ${activeCatId === "all"
-                ? "bg-[#B22271] text-white border-[#B22271] shadow-md scale-105 text-xl md:text-2xl"
-                : "bg-transparent text-[#B22271] border-[#B22271] hover:bg-[#B22271]/10 hover:scale-105 text-2xl md:text-3xl"}
+                ? "bg-[#B22271] text-white border-[#B22271] shadow-md"
+                : "bg-transparent text-[#B22271] border-[#B22271] hover:bg-[#B22271]/10"}
       `}
           >
             الكل
@@ -267,11 +299,11 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
                 onClick={() => setActiveCatId(cat.id)}
                 className={`
             px-5 py-2 rounded-full whitespace-nowrap
-            font-bold text-sm md:text-base
-            border transition-all duration-300 ease-out
+            font-bold text-base md:text-lg
+            border transition-colors duration-300 ease-out
             ${isActive
-                    ? "bg-[#B22271] text-white border-[#B22271] shadow-md scale-105 text-xl md:text-2xl"
-                    : "bg-transparent text-[#B22271] border-[#B22271] hover:bg-[#B22271]/10 hover:scale-105 text-2xl md:text-3xl"}
+                    ? "bg-[#B22271] text-white border-[#B22271] shadow-md"
+                    : "bg-transparent text-[#B22271] border-[#B22271] hover:bg-[#B22271]/10"}
           `}
               >
                 {cat.name}
@@ -280,6 +312,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
           })}
         </div>
       </div>
+
 
       {/* ===== محتوى القسم / عرض الكل ===== */}
       <div className="min-h-screen">
