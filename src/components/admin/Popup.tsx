@@ -8,8 +8,8 @@ interface Props {
   deleteCategory?: (id: string) => void;
   addCategory?: () => void;
   updateItem?: () => void;
-  
-  
+
+
   editItemValues?: {
     itemName: string;
     itemPrice: string;
@@ -62,16 +62,16 @@ const Popup: React.FC<Props> = ({
   return (
     <>
       {/* خلفية قاتمة */}
-      <div className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" 
-           onClick={() => {
-             setPopup({ type: null });
-             setResetPasswordPopup && setResetPasswordPopup(false);
-           }}
+      <div className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
+        onClick={() => {
+          setPopup({ type: null });
+          setResetPasswordPopup && setResetPasswordPopup(false);
+        }}
       />
 
       {/* محتوى Popup */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="relative bg-white p-6 rounded-3xl shadow-2xl w-72 sm:w-80">
+      <div className="fixed inset-0 z-50 flex items-center justify-center " >
+        <div className="relative bg-white p-6 rounded-3xl shadow-2xl w-72 sm:w-80 border-4" style={{ borderColor: "#B22271" }} >
           {/* ===== Logout ===== */}
           {popup.type === "logout" && (
             <>
@@ -82,7 +82,7 @@ const Popup: React.FC<Props> = ({
                     logout && logout();
                     setPopup({ type: null });
                   }}
-                  className="px-5 py-2 rounded-xl font-bold bg-black text-red-500 hover:cursor-pointer"
+                  className="px-5 py-2 rounded-xl font-bold bg-[#B22271] text-white hover:bg-[#B22271]/80 hover:cursor-pointer"
                 >
                   نعم
                 </button>
@@ -193,7 +193,7 @@ const Popup: React.FC<Props> = ({
                   })
                 }
               />
-               {/* ✅ حقل المكونات */}
+              {/* ✅ حقل المكونات */}
               <input
                 className="w-full p-2 border rounded-xl mb-3"
                 placeholder="المكونات أو الوصف (اختياري)"
@@ -234,13 +234,13 @@ const Popup: React.FC<Props> = ({
               <div className="flex justify-end gap-2">
                 <button
                   onClick={updateItem}
-                  className="px-4 py-2 rounded-xl font-bold bg-[#B22271] hover:cursor-pointer hover:text-white hover:bg-[#c44a8d] transition"
+                  className="px-4 py-2 rounded-xl font-bold bg-[#D2000E] hover:cursor-pointer hover:text-white hover:bg-[#e2444f] transition"
                 >
                   حفظ
                 </button>
                 <button
                   onClick={() => setPopup({ type: null })}
-                  className="px-4 py-2 rounded-xl border hover:cursor-pointer" 
+                  className="px-4 py-2 rounded-xl border hover:cursor-pointer"
                 >
                   إلغاء
                 </button>

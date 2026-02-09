@@ -1,96 +1,170 @@
 import { type Item } from "./Menu";
+import { useState } from "react";
+import { useCart } from "../../context/CartContext";
+import { FaCheck } from "react-icons/fa";
 
 interface Props {
   item: Item;
-  luxury?: boolean;
+  orderSystem: boolean;
 }
 
-export default function ItemRow({ item, luxury }: Props) {
+export default function ItemRow({ item, orderSystem }: Props) {
   const prices = String(item.price).split(",");
   const unavailable = item.visible === false;
 
-  if (!luxury) return null;
-// bg-linear-to-br from-[#df4a9c] via-[#E5BB07] to-[#df4a9c]
+  const { addItem } = useCart();
+  const [addedPrice, setAddedPrice] = useState<number | null>(null);
+  const [showToast, setShowToast] = useState(false);
+
+  const hasIngredients = !!item.ingredients;
+
+  const handleAdd = (price: number) => {
+    addItem(item, price);
+    setAddedPrice(price);
+    setShowToast(true);
+
+    setTimeout(() => {
+      setAddedPrice(null);
+      setShowToast(false);
+    }, 1000);
+  };
+
   return (
     <div
       className={`
-        relative
-        rounded-3xl
-        p-0.5
-        bg-white
-        shadow-md shadow-[#B22271] 
-        transition-all duration-300 ease-out
-        ${
-          unavailable
-            ? "opacity-60 pointer-events-none shadow-none"
-            : "hover:shadow-lg shadow-[#B22271] hover:-translate-y-1"
-        }
+        relative w-full h-full
+        ${unavailable ? "opacity-60" : ""}
       `}
     >
-      {/* Inner Card */}
+      {/* ===== Card ===== */}
       <div
         className={`
-          rounded-[calc(1rem-2px)]
-          px-5 py-4 md:px-6 md:py-5
-          flex items-center justify-between gap-4
-          ${unavailable ? "bg-gray-100" : "bg-white"}
+          relative flex flex-col h-full
+          rounded-xl overflow-hidden
+          shadow-lg shadow-[#B22271]/40
+          bg-linear-to-br from-white/90 to-white/95
+          border ${unavailable ? "border-gray-400/40" : "border-[#a70a05]/40"}
+          shadow-md transition-all duration-500
+          active:scale-[0.98]
+          font-[Almarai] font-bold
         `}
       >
-        {/* Name + Ingredients */}
-        <div className="flex-1 min-w-0">
+        {/* ===== Image ===== */}
+        <div className="w-full h-32 sm:h-36 bg-black/20 overflow-hidden">
+          <img
+            src={item.image ? `/images/${item.image}` : "/logo_akila.png"}
+            alt={item.name}
+            loading="lazy"
+            className={`w-full h-full object-cover hover:scale-105 transition-all duration-500
+              ${unavailable ? "hover:none" : ""}`}
+            onError={(e) => {
+              e.currentTarget.src = "/logo_akila.png";
+            }}
+          />
+        </div>/ // /
+
+        {/* ===== Content ===== */}
+        <div className="p-3 flex flex-col gap-1 flex-1 -mt-8">
+          {/* Name */}
           <h3
             className={`
-              text-md md:text-lg font-[Cairo] font-medium truncate
-              ${unavailable ? "line-through text-gray-400" : "text-black"}
+              text-sm sm:text-xl font-extrabold leading-snug
+              ${unavailable
+                ? "line-through text-gray-300 text-center"
+                : "text-[#B22271] text-center text-xl md:text-2xl"}
             `}
           >
             {item.name}
           </h3>
 
-          {!unavailable && item.ingredients && (
-            <p className="mt-1 text-xs md:text-sm font-[Cairo] text-gray-500 truncate">
+          {/* Ingredients */}
+          {hasIngredients && (
+            <p
+              className={`
+                text-[11px] sm:text-xs text-gray-600 line-clamp-2 text-center
+                ${unavailable ? "line-through" : ""}
+              `}
+            >
               {item.ingredients}
             </p>
           )}
-        </div>
 
-        {/* Price */}
-        <div className="shrink-0 text-right">
-          {unavailable ? (
-            <div className="flex gap-2 text-gray-400 line-through font-[Cairo] font-bold text-md md:text-lg">
-              {prices.map((p, i) => (
-                <span key={i}>{p.trim()}₪</span>
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              {prices.map((p, i) => (
-                <span
-                  key={i}
-                  className="text-md md:text-lg font-[Cairo] font-medium text-black"
-                >
-                  {p.trim()}₪
-                </span>
-              ))}
+          {/* ===== Prices + Add ===== */}
+          <div className="mt-auto flex flex-col gap-2">
+            {orderSystem
+              ? prices.map((p) => {
+                const price = Number(p.trim());
+                const isAdded = addedPrice === price;
 
-              {/* {item.priceTw && item.priceTw > 0 && (
-                <span
-                  className="
-                    px-3 py-1
-                    rounded-full
-                    text-xs font-[Cairo] font-semibold
-                    bg-white
-                    text-black
-                    border border-[#B22271]/80
-                  "
-                >
-                  TW {item.priceTw}₪
-                </span>
-              )} */}
-            </div>
-          )}
+                return (
+                  <div
+                    key={price}
+                    className={`
+              flex items-center justify-between
+              px-2 py-1.5 rounded-xl
+              bg-white/80 border border-[#B22271]/30
+              transition
+              ${unavailable ? "opacity-50 line-through" : ""}
+            `}
+                  >
+                    <span className="text-md font-extrabold text-[#B22271]">
+                      {price}₪
+                    </span>
+
+                    {!unavailable && (
+                      <button
+                        onClick={() => handleAdd(price)}
+                        className={`
+                  w-7 h-7 flex items-center justify-center
+                  rounded-md text-white font-bold
+                  transition-all duration-300
+                  active:scale-90
+                  ${isAdded
+                            ? "bg-[#B22271] text-xl md:text-2xl"
+                            : "bg-[#B22271]/90 hover:scale-110"
+                          }
+                `}
+                      >
+                        {isAdded ? (
+                          <FaCheck className="animate-pulse" />
+                        ) : (
+                          <span className="text-lg md:text-xl font-extrabold">+</span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                );
+              })
+              : (
+                // ===== عرض الأسعار جنب بعض بالفاصلة إذا النظام غير مفعل =====
+                <p className="text-md font-extrabold text-[#B22271] text-center">
+                  {prices.map(p => p.trim() + "₪").join(" || ")}
+                </p>
+              )
+            }
+          </div>
         </div>
       </div>
+      {/* ===== Toast ===== */}
+      {showToast && (
+        <div
+          className="
+            absolute top-2 left-1/2
+            -translate-x-1/2
+            bg-[#B22271]
+            text-white font-bold
+            px-3 py-1.5 rounded-xl
+            shadow-lg
+            flex items-center gap-2
+            animate-toast-show
+            pointer-events-none
+            z-50
+          "
+        >
+          <FaCheck className="w-4 h-4" />
+          <span className="text-xs">تمت الإضافة</span>
+        </div>
+      )}
     </div>
   );
 }

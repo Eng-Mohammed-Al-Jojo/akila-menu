@@ -4,108 +4,185 @@ import {
   FaInstagram,
   FaWhatsapp,
   FaFacebookF,
-  FaTiktok,
   FaPhoneAlt,
+  FaTelegramPlane,
+  FaTiktok,
+  FaCommentDots,
 } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { ref, onValue } from "firebase/database";
+import { db } from "../../firebase";
+import FeedbackModal from "../menu/FeedbackModal";
+
+const LOCAL_STORAGE_KEY = "footerInfo";
 
 export default function Footer() {
+
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [complaintsWhatsapp, setComplaintsWhatsapp] = useState("");
+
+  const [footer, setFooter] = useState({
+    address: "",
+    phone: "",
+    whatsapp: "",
+    facebook: "",
+    instagram: "",
+    tiktok: "",
+    telegram: "",
+  });
+
+
+  useEffect(() => {
+    /* ===== footerInfo ===== */
+    const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (localData) setFooter(JSON.parse(localData));
+
+    const footerRef = ref(db, "settings/footerInfo");
+    const unsubFooter = onValue(footerRef, (snapshot) => {
+      if (snapshot.exists()) {
+        console.log("Firebase footerInfo:", snapshot.val());
+        const data = snapshot.val();
+        setFooter(data);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+      }
+    });
+
+    /* ===== complaintsWhatsapp ===== */
+    const complaintsRef = ref(db, "settings/complaintsWhatsapp");
+    const unsubComplaints = onValue(complaintsRef, (snapshot) => {
+      const value = snapshot.val();
+      setComplaintsWhatsapp(value ? String(value).trim() : "");
+    });
+
+    return () => {
+      unsubFooter();
+      unsubComplaints();
+    };
+  }, []);
+
+  /* ===== Social Icons ===== */
+  const socialIcons: { Icon: any; url: string | undefined }[] = [
+    {
+      Icon: FaWhatsapp,
+      url: footer.whatsapp
+        ? `https://wa.me/${footer.whatsapp}`
+        : undefined,
+    },
+    { Icon: FaInstagram, url: footer.instagram || undefined },
+    { Icon: FaFacebookF, url: footer.facebook || undefined },
+    { Icon: FaTiktok, url: footer.tiktok || undefined },
+    { Icon: FaTelegramPlane, url: footer.telegram || undefined },
+  ];
+
   return (
-    <footer className="mt-16 bg-[#9E1E64] text-white rounded-t-3xl">
-      <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between items-center gap-8 text-sm">
+    <footer
+      className="
+        mt-20
+        bg-linear-to-t from-[#B22271] via-[#B22271]/95 to-[#B22271]/90
+        text-[#F5F8F7]
+        rounded-t-3xl
+        border-t border-[#FDB143]/30
+        font-[Almarai]
+      "
+    >
+      <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-8">
+        {/* ===== Right | Address ===== */}
+        <div className="flex flex-col md:items-end items-center space-y-3 w-full md:w-auto">
+          {footer.address && (
+            <div className="flex items-center gap-2 text-lg font-[Cairo]">
+              <FaMapMarkerAlt className="text-xl shrink-0" />
+              <span className="text-right">{footer.address}</span>
+            </div>
+          )}
 
-        {/* Info */}
-        <div className="space-y-3 text-center md:text-right">
 
-          {/* Location */}
-          <div
-            className="
-              flex items-center gap-2
-              justify-center md:justify-end
-              text-md md:text-lg
-              font-[Cairo]
-            "
-          >
-            <FaMapMarkerAlt className="text-[#E6C989]" />
-            غزة - شارع الثورة - بجانب تاج مول
-          </div>
 
-          {/* Contact Numbers */}
-          <div className="flex flex-col gap-1 items-center md:items-end">
+          {footer.phone && (
             <a
-              href="tel:+970592270295"
-              className="flex items-center gap-2 font-[Cairo] text-md md:text-lg"
+              href={`tel:${footer.phone}`}
+              className="flex items-center gap-2"
             >
-              <FaPhoneAlt className="text-[#E6C989]" />
-              0592270295
+              <FaPhoneAlt /> {footer.phone}
             </a>
-
-            <a
-              href="tel:+970592133357"
-              className="flex items-center gap-2 font-[Cairo] text-md md:text-lg"
-            >
-              <FaPhoneAlt className="text-[#E6C989]" />
-              0592554701
-            </a>
-          </div>
+          )}
         </div>
 
-        {/* Social */}
-        <div className="flex gap-4">
-          {[
-            { href: "https://wa.me/+972592270295", icon: <FaWhatsapp /> },
-            { href: "https://www.instagram.com/akila_coffee?igsh=MWNodDN3N29pdWlvbg==", icon: <FaInstagram /> },
-            { href: "https://www.facebook.com/share/1GXQRH6J2u/?mibextid=wwXIfr", icon: <FaFacebookF /> },
-            { href: "https://www.tiktok.com/@akilacoffe?_r=1&_t=ZS-937nI15QJYg", icon: <FaTiktok /> },
-          ].map((item, i) => (
-            <a
-              key={i}
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
+        {/* ===== Center | Social + Feedback ===== */}
+        <div className="flex flex-col items-center gap-5 w-full md:w-auto">
+          <div className="flex gap-4">
+            {socialIcons.map(
+              ({ Icon, url }, i) =>
+                url && (
+                  <a
+                    key={i}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="
+                      w-10 h-10 rounded-full flex items-center justify-center
+                      bg-white text-[#B22271]
+                      hover:scale-110
+                      hover:shadow-[0_0_25px_rgba(253,177,67,0.6)]
+                      transition-all duration-300
+                    "
+                  >
+                    <Icon className="text-[#B22271] text-lg" />
+                  </a>
+                )
+            )}
+          </div>
+
+          {/* ===== Feedback Button ===== */}
+          {complaintsWhatsapp !== "" && (
+            <button
+              onClick={() => setShowFeedbackModal(true)}
               className="
-                group
-                p-0.5
-                rounded-full
-                bg-linear-to-br from-[#E6C989] via-[#CD2777] to-[#E6C989]
+                mt-4 w-full max-w-xs flex items-center justify-center gap-2
+                bg-white text-[#B22271]
+                rounded-2xl
+                py-3 px-4
+                shadow-lg
+                hover:scale-105 hover:shadow-xl
                 transition-all duration-300
-                hover:scale-105
               "
             >
-              <span
-                className="
-                  flex items-center justify-center
-                  w-9 h-9 md:w-10 md:h-10
-                  rounded-full
-                  bg-[#FAF8F4]
-                  text-[#B68A3A]
-                  text-base md:text-lg
-                  transition-all duration-300
-                  group-hover:bg-white
-                  group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.15)]
-                "
-              >
-                {item.icon}
-              </span>
-            </a>
-          ))}
+              <FaCommentDots className="w-6 h-6 animate-pulse" />
+              <span className="text-sm font-bold">أرسل تقييمك</span>
+            </button>
+          )}
         </div>
 
-        {/* Signature */}
-        <div className="flex items-center gap-2 opacity-80">
+        {/* ===== Left | Signature ===== */}
+        <div className="flex flex-col md:items-start items-center w-full md:w-auto">
           <a
             href="https://engmohammedaljojo.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2"
+            className="group flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-white/10 transition"
           >
-            <FaLaptopCode className="text-[#E6C989] text-xl md:text-2xl" />
-            <span className="font-[Cairo] font-semibold tracking-wide text-sm md:text-md text-white">
-              Eng. Mohammed Eljoujo
-            </span>
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+              <FaLaptopCode className="text-white text-lg" />
+            </div>
+
+            <div className="leading-tight text-center md:text-left">
+              <span className="block text-[10px] opacity-70">
+                تصميم وتطوير
+              </span>
+              <span className="block font-extrabold text-xs md:text-sm">
+                Eng. Mohammed Eljoujo
+              </span>
+            </div>
           </a>
         </div>
-
       </div>
+
+      {/* ===== Feedback Modal ===== */}
+      {complaintsWhatsapp !== "" && (
+        <FeedbackModal
+          show={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+        />
+      )}
     </footer>
   );
 }

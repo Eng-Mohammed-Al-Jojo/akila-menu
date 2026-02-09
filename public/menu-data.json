@@ -7,6 +7,10 @@
     "-OjCAfBVhhQcZziLusmw": {
       "createdAt": 1768673948667,
       "name": "براد طبيعي"
+    },
+    "-OjN1Xv2k5qL9zY8ABcD": {
+      "createdAt": 1765433741169,
+      "name": "مشروبات ساخنة"
     }
   },
   "items": {
@@ -26,10 +30,274 @@
       "name": "جوافة",
       "price": "8,12,15",
       "visible": true
+    },
+    "-OjN2a1kLm3PQ5RstU1v": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765433457629,
+      "ingredients": "",
+      "name": "ليمون",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN2b2mNo4QR6StuV2w": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765433480452,
+      "ingredients": "",
+      "name": "ليمون ونعناع",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN2c3oPp5RS7TuvW3x": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765433598587,
+      "ingredients": "",
+      "name": "فراولة",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN2d4qQq6ST8UvwX4y": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765433608059,
+      "ingredients": "",
+      "name": "مانجا",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN2e5rRr7TU9VwxY5z": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765433633435,
+      "ingredients": "",
+      "name": "شمام",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN2f6sSs8UV0XxyZ6a": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765433648222,
+      "ingredients": "",
+      "name": "كيوي",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN2g7tTt9VW1YyzA7b": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765433681870,
+      "ingredients": "",
+      "name": "جوافة",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN2h8uUu0WX2Z0zB8c": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765433698861,
+      "ingredients": "",
+      "name": "رمان",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN2i9vVv1XY3A1aC9d": {
+      "categoryId": "-OjCAfBVhhQcZziLusmw",
+      "createdAt": 1765649208346,
+      "ingredients": "",
+      "name": "بطيخ",
+      "price": "5,7,10",
+      "visible": true
+    },
+    "-OjN3a1wWw2YZ4B2bD0e": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433133678,
+      "ingredients": "",
+      "name": "تفاح",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3b2xXx3ZA5C3cE1f": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433153178,
+      "ingredients": "",
+      "name": "برتقال",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3c3yYy4AB6D4dF2g": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433162697,
+      "ingredients": "",
+      "name": "رمان",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3d4zZz5BC7E5eG3h": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433285859,
+      "ingredients": "",
+      "name": "ليمون بالنعناع",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3e5Aa6CD8F6fH4i": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433299259,
+      "ingredients": "",
+      "name": "موز بالحليب",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3f6Bb7DE9G7gH5j": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433315731,
+      "ingredients": "",
+      "name": "أناناس",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3g7Cc8EF0H8hI6k": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433325314,
+      "ingredients": "",
+      "name": "مانجا",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3h8Dd9FG1I9iJ7l": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433355311,
+      "ingredients": "",
+      "name": "كوكتيل",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3i9Ee0GH2J0jK8m": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433379167,
+      "ingredients": "",
+      "name": "أفوكادو بالعسل ومكسرات",
+      "price": "25,30,35",
+      "visible": true
+    },
+    "-OjN3j0Ff1HI3K1kL9n": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433400867,
+      "ingredients": "",
+      "name": "كيوي واناناس",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN3k1Gg2IJ4L2lM0o": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765433416491,
+      "ingredients": "",
+      "name": "سلطة فواكة مع نوتيلا",
+      "price": "30",
+      "visible": true
+    },
+    "-OjN4a2Hh3JK5M3mN1p": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765636854514,
+      "ingredients": "",
+      "name": "عصير جوافة",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN4b3Ii4KL6N4nO2q": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765712612028,
+      "ingredients": "",
+      "name": "شمام",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN4c4Jj5LM7O5oP3r": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765712646387,
+      "ingredients": "",
+      "name": "موز + كيوي",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN4d5Kk6MN8P6pQ4s": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765713948409,
+      "ingredients": "",
+      "name": "كيوي",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN4e6Ll7NO9Q7qR5t": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765714055657,
+      "ingredients": "",
+      "name": "بطيخ",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN4f7Mm8OP0R8rS6u": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1765724643089,
+      "ingredients": "",
+      "name": "مانجا + فلورا",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN4g8Nn9PQ1S9sT7v": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1766055638179,
+      "ingredients": "",
+      "name": "فراولة",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN4h9Oo0QR2T0tU8w": {
+      "categoryId": "-OjCA_T2L7PMTQ0Ruoe9",
+      "createdAt": 1766055650851,
+      "ingredients": "",
+      "name": "فراولة و موز",
+      "price": "15,20,25",
+      "visible": true
+    },
+    "-OjN5a0Pp1RS3U1uV9x": {
+      "categoryId": "-OjN1Xv2k5qL9zY8ABcD",
+      "createdAt": 1765433741169,
+      "ingredients": "",
+      "name": "شاي",
+      "price": "10",
+      "visible": true
+    },
+    "-OjN5b1Qq2ST4V2vW0y": {
+      "categoryId": "-OjN1Xv2k5qL9zY8ABcD",
+      "createdAt": 1765433748760,
+      "ingredients": "",
+      "name": "قهوة",
+      "price": "10",
+      "visible": true
+    },
+    "-OjN5c2Rr3TU5W3wX1z": {
+      "categoryId": "-OjN1Xv2k5qL9zY8ABcD",
+      "createdAt": 1765433765536,
+      "ingredients": "",
+      "name": "نسكافيه",
+      "price": "10",
+      "visible": true
+    },
+    "-OjN5d3Ss4UV6X4xY2a": {
+      "categoryId": "-OjN1Xv2k5qL9zY8ABcD",
+      "createdAt": 1765649623099,
+      "ingredients": "",
+      "name": "كابتشينو",
+      "price": "10",
+      "visible": true
+    },
+    "-OjN5e4Tt5VW7Y5yZ3b": {
+      "categoryId": "-OjN1Xv2k5qL9zY8ABcD",
+      "createdAt": 1766066094044,
+      "ingredients": "",
+      "name": "زنجبيل بالعسل",
+      "price": "10",
+      "visible": true
     }
   },
   "meta": {
     "version": "1.0",
-    "exportedAt": 1768742793404
+    "exportedAt": 1768817323364
   }
 }

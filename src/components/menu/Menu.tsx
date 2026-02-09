@@ -3,13 +3,20 @@ import { db } from "../../firebase";
 import { ref, onValue } from "firebase/database";
 import CategorySection from "./CategorySection";
 
+
+
+/* ================= Types ================= */
 export interface Category {
   id: string;
   name: string;
+  available?: boolean;
+  order?: number;
   createdAt?: number;
 }
 
 export interface Item {
+  featured: any;
+  image: string | undefined;
   id: string;
   name: string;
   price: number;
@@ -17,236 +24,297 @@ export interface Item {
   priceTw?: number;
   categoryId: string;
   visible?: boolean;
+  star?: boolean;
   createdAt?: number;
 }
 
-export default function Menu() {
+/* ================= LocalStorage ================= */
+const saveToLocal = (cats: Category[], its: Item[], orderSystem: boolean) => {
+  localStorage.setItem(
+    "menu_cache",
+    JSON.stringify({
+      categories: cats,
+      items: its,
+      orderSystem,
+      savedAt: Date.now(),
+    })
+  );
+};
+
+const loadFromLocal = () => {
+  const cached = localStorage.getItem("menu_cache");
+  if (!cached) return null;
+  return JSON.parse(cached);
+};
+
+/* ================= Main Component ================= */
+interface Props {
+  onLoadingChange?: (loading: boolean) => void;
+  onFeaturedCheck?: (hasFeatured: boolean) => void;
+}
+
+export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [orderSystem, setOrderSystem] = useState<boolean>(true);
 
-  // ======= حالة التوست =======
-  const [offlineToast, setOfflineToast] = useState<{
-    message: string;
-    color: string;
-  } | null>(null);
+  const [toast, setToast] = useState<{ message: string; color: "green" | "red" } | null>(null);
 
+  /* ===== Tabs State (إضافة ضرورية) ===== */
+  const [activeCatId, setActiveCatId] = useState<string | null>("all");
+
+  /* ================= Load Backup JSON ================= */
+  const loadMenuJson = async () => {
+    try {
+      const res = await fetch("/menu.json");
+      const data = await res.json();
+
+      const cats: Category[] = Object.entries(data.categories || {}).map(
+        ([id, v]: any) => ({
+          id,
+          name: v.name,
+          available: v.available !== false,
+          order: v.order ?? 0,
+          createdAt: v.createdAt || 0,
+        })
+      ).sort((a, b) => a.order - b.order);
+
+      const its: Item[] = Object.entries(data.items || {}).map(
+        ([id, v]: any) => ({
+          id,
+          ...v,
+          createdAt: v.createdAt || 0,
+        })
+      );
+
+      setCategories(cats);
+      setItems(its);
+      setOrderSystem(data.orderSystem ?? true);
+      setLoading(false);
+      onLoadingChange?.(false);
+
+      setToast({ message: "تم تحميل نسخة احتياطية", color: "red" });
+      setTimeout(() => setToast(null), 4000);
+    } catch {
+      setLoading(false);
+      onLoadingChange?.(false);
+    }
+  };
+
+  /* ================= useEffect ================= */
   useEffect(() => {
-    const loadData = async () => {
+    onLoadingChange?.(true);
+
     let timeoutId: number | null = null;
+    let firebaseLoaded = false;
 
-      // ⚡ ضبط تنبيه الاتصال الضعيف بعد 15 ثانية
-      timeoutId = setTimeout(() => {
-        setOfflineToast({
-          message: "الانترنت ضعيف! تأكد من اتصالك بالانترنت",
-          color: "red",
-        });
-        setTimeout(() => setOfflineToast(null), 5000);
-      }, 15000);
+    const finishFirebase = (cats: Category[], its: Item[], os: boolean) => {
+      firebaseLoaded = true;
+      saveToLocal(cats, its, os);
+      setLoading(false);
+      onLoadingChange?.(false);
+      if (timeoutId) clearTimeout(timeoutId);
 
-      if (navigator.onLine) {
-        let catsLoaded = false;
-        let itemsLoaded = false;
-
-        onValue(ref(db, "categories"), (snap) => {
-          const data = snap.val();
-          const cats = data
-            ? Object.entries(data).map(([id, v]: any) => ({
-                id,
-                name: v.name,
-                createdAt: v.createdAt || 0,
-              }))
-            : [];
-
-          setCategories(cats);
-          catsLoaded = true;
-          if (itemsLoaded) {
-            setLoading(false);
-            if (timeoutId) clearTimeout(timeoutId);
-          }
-        });
-
-        onValue(ref(db, "items"), (snap) => {
-          const data = snap.val();
-          const its = data
-            ? Object.entries(data).map(([id, v]: any) => ({
-                id,
-                ...v,
-                createdAt: v.createdAt || 0,
-              }))
-            : [];
-
-          setItems(its);
-          itemsLoaded = true;
-          if (catsLoaded) {
-            setLoading(false);
-            if (timeoutId) clearTimeout(timeoutId);
-          }
-        });
-
-        // 🌟 توست أونلاين أخضر
-        setOfflineToast({ message: "أنت حالياً متصل بقاعدة البيانات", color: "green" });
-        setTimeout(() => setOfflineToast(null), 4000);
-      } else {
-        try {
-          const res = await fetch("/menu-data.json");
-          const data = await res.json();
-
-          const cats = data.categories
-            ? Object.entries(data.categories).map(([id, v]: any) => ({
-                id,
-                name: v.name,
-                createdAt: v.createdAt || 0,
-              }))
-            : [];
-
-          const its = data.items
-            ? Object.entries(data.items).map(([id, v]: any) => ({
-                id,
-                ...v,
-                createdAt: v.createdAt || 0,
-              }))
-            : [];
-
-          setCategories(cats);
-          setItems(its);
-          setLoading(false);
-
-          if (timeoutId) clearTimeout(timeoutId);
-
-          // 🔴 توست أوفلاين أحمر
-          setOfflineToast({
-            message: "أنت حالياً غير متصل بقاعدة البيانات (نسخة محلية)",
-            color: "red",
-          });
-          setTimeout(() => setOfflineToast(null), 4000);
-        } catch (err) {
-          console.error("Failed to load offline data:", err);
-          setCategories([]);
-          setItems([]);
-          setLoading(false);
-
-          if (timeoutId) clearTimeout(timeoutId);
-
-          setOfflineToast({ message: "فشل تحميل البيانات أوفلاين", color: "red" });
-          setTimeout(() => setOfflineToast(null), 4000);
-        }
-      }
+      setToast({ message: "تم التحميل من قاعدة البيانات", color: "green" });
+      setTimeout(() => setToast(null), 3000);
     };
 
-    loadData();
-  }, []);
+    const loadOnline = () => {
+      let cats: Category[] = [];
+      let its: Item[] = [];
+      let catsLoaded = false;
+      let itemsLoaded = false;
+      let orderSystemLoaded = false;
 
-  // ================= Empty State Logic =================
-  const isEmpty =
-    categories.length === 0 ||
-    items.length === 0 ||
-    categories.every((cat) => !items.some((item) => item.categoryId === cat.id));
+      timeoutId = window.setTimeout(() => {
+        if (firebaseLoaded) return;
+        const cached = loadFromLocal();
+        if (cached) {
+          setCategories(cached.categories || []);
+          setItems(cached.items || []);
+          setOrderSystem(cached.orderSystem ?? true);
+          setLoading(false);
+          onLoadingChange?.(false);
 
-  // ================= Loading Screen =================
+          setToast({ message: "الإنترنت ضعيف، تم تحميل آخر نسخة محفوظة", color: "red" });
+          setTimeout(() => setToast(null), 4000);
+        } else {
+          loadMenuJson();
+        }
+      }, 8000);
+
+      onValue(ref(db, "categories"), (snap) => {
+        const data = snap.val();
+        cats = data
+          ? Object.entries(data).map(([id, v]: any) => ({
+            id,
+            name: v.name,
+            available: v.available !== false,
+            order: v.order ?? 0,
+            createdAt: v.createdAt || 0,
+          }))
+          : [];
+        cats.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        setCategories(cats);
+        catsLoaded = true;
+        if (itemsLoaded && orderSystemLoaded) finishFirebase(cats, its, orderSystem);
+      });
+
+      onValue(ref(db, "items"), (snap) => {
+        const data = snap.val();
+        its = data
+          ? Object.entries(data).map(([id, v]: any) => ({
+            id,
+            ...v,
+            createdAt: v.createdAt || 0,
+          }))
+          : [];
+        setItems(its);
+        itemsLoaded = true;
+        if (catsLoaded && orderSystemLoaded) finishFirebase(cats, its, orderSystem);
+      });
+
+      onValue(ref(db, "settings/orderSystem"), (snap) => {
+        const val = snap.val();
+        setOrderSystem(val ?? true);
+        orderSystemLoaded = true;
+        if (catsLoaded && itemsLoaded) finishFirebase(cats, its, val ?? true);
+      });
+    };
+
+    if (navigator.onLine) loadOnline();
+    else loadMenuJson();
+  }, [onLoadingChange]);
+
+  /* ================= Check Featured Items ================= */
+  useEffect(() => {
+    const hasFeatured = items.some((item) => item.star === true);
+    onFeaturedCheck?.(hasFeatured);
+  }, [items, onFeaturedCheck]);
+
+  /* ================= Available Categories ================= */
+  const availableCategories = categories.filter((cat) => cat.available);
+
+  /* ===== تحديد أول Tab تلقائيًا (إضافة مهمة) ===== */
+  useEffect(() => {
+    if (!activeCatId && availableCategories.length && items.length) {
+      const firstCat = availableCategories.find(cat =>
+        items.some(i => i.categoryId === cat.id)
+      );
+      if (firstCat) setActiveCatId(firstCat.id);
+    }
+  }, [availableCategories, items, activeCatId]);
+
+  /* ================= Loading Page ================= */
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-md">
-        <div className="flex flex-col items-center gap-6">
-          <img src="/logo_akila.png" alt="Logo" className="w-28 h-auto animate-pulse" />
-
-          <div className="relative w-20 h-20">
-            <div className="absolute inset-0 rounded-full border-4 border-[#B22271]" />
-            <div className="absolute inset-0 rounded-full border-4 border-t-transparent border-[#d369b3] animate-spin" />
-          </div>
-
-          <p className="text-[#B22271] text-xl md:text-3xl tracking-widest animate-pulse font-[Cairo] font-extrabold">
-            يتم تحضير القائمة...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // ================= Empty Screen =================
-  if (isEmpty) {
-    return (
-      <div className="fixed inset-0 z-40 flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center text-center gap-6 px-6">
-          <img src="/logo_akila.png" alt="Logo" className="w-50 h-auto opacity-80" />
-
-          <p className="text-xl md:text-2xl font-[Cairo] font-bold text-gray-500">
-            انتظرونا، يتم تجهيز القائمة قريبًا
-          </p>
-
-          <div className="mt-4 flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#B22271] animate-bounce" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E5BB07] animate-bounce [animation-delay:150ms]" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#CCC20D] animate-bounce [animation-delay:300ms]" />
+      <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black overflow-hidden">
+        <div className="absolute inset-0 bg-[#B22271]/10 blur-2xl animate-bg-pulse" />
+        <div className="relative z-10 flex flex-col items-center gap-8 animate-loader-fade">
+          <div className="relative">
+            <div className="absolute inset-[-20px] rounded-full bg-[#B22271]/30 blur-2xl animate-halo" />
+            <div className="w-32 h-32 rounded-full bg-linear-to-br from-[#B22271] to-[#B22271]
+              flex items-center justify-center shadow-2xl shadow-black/70 animate-logo-float">
+              <img src="/logo.png" alt="Restaurant Logo" className="w-20 h-20 object-contain" />
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // ================= Main Content =================
+  /* ================= Render ================= */
   return (
-    <main className="max-w-4xl mx-auto px-4 pb-20 space-y-8 relative">
-      {/* ================= Toast ================= */}
-      {offlineToast && (
+    <main className="max-w-4xl mx-auto px-0 pb-10 font-[Alamiri] text-[#F5F8F7]">
+      {toast && (
         <div
-          className={`fixed top-6 right-6 px-6 py-3 rounded-2xl text-white font-bold shadow-2xl backdrop-blur-md bg-opacity-90 transition-all duration-500 transform z-50`}
-          style={{
-            background:
-              offlineToast.color === "green"
-                ? "linear-gradient(to right, #34D399, #059669)"
-                : "linear-gradient(to right, #F87171, #B91C1C)",
-          }}
+          className={`fixed top-6 right-6 px-4 py-3 rounded-2xl font-bold shadow-2xl z-50 text-white
+          ${toast.color === "green" ? "bg-[#B22271]" : "bg-[#B22271]"}`}
         >
-          {offlineToast.message}
+          {toast.message}
         </div>
       )}
 
-      {/* ================= Tabs ================= */}
-      <div className="flex flex-wrap gap-3 pb-4 justify-center">
-        <button
-          onClick={() => setActiveCategory(null)}
-          className={`px-3 py-1.5 rounded-full font-[Cairo] text-sm transition-all duration-300 ${
-            activeCategory === null
-              ? "bg-[#BFA06B] text-white shadow-md"
-              : "bg-[#F5F1EB] text-[#7A5A2E] hover:bg-[#EEE6D1]"
-          }`}
-        >
-          جميع الأصناف
-        </button>
+      {/* ===== Tabs الأقسام ===== */}
+      <div className="top-0 z-30 bg-inherit py-3">
+        <div className="flex gap-2 px-3 items-center justify-center flex-wrap">
+          {/* زر عرض الكل */}
+          <button
+            onClick={() => setActiveCatId("all")}
+            className={`
+        px-5 py-2 rounded-full whitespace-nowrap
+        font-bold text-sm md:text-base
+        border transition-all duration-300 ease-out
+        ${activeCatId === "all"
+                ? "bg-[#B22271] text-white border-[#B22271] shadow-md scale-105 text-xl md:text-2xl"
+                : "bg-transparent text-[#B22271] border-[#B22271] hover:bg-[#B22271]/10 hover:scale-105 text-2xl md:text-3xl"}
+      `}
+          >
+            الكل
+          </button>
 
-        {categories
-          .filter((cat) => items.some((i) => i.categoryId === cat.id))
-          .map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-full font-[Cairo] text-sm transition-all duration-300 ${
-                activeCategory === cat.id
-                  ? "bg-[#BFA06B] text-white shadow-md"
-                  : "bg-[#F5F1EB] text-[#7A5A2E] hover:bg-[#EEE6D1]"
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
+          {/* بقية التابس */}
+          {availableCategories.map((cat) => {
+            const hasItems = items.some((i) => i.categoryId === cat.id);
+            if (!hasItems) return null;
+
+            const isActive = activeCatId === cat.id;
+
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCatId(cat.id)}
+                className={`
+            px-5 py-2 rounded-full whitespace-nowrap
+            font-bold text-sm md:text-base
+            border transition-all duration-300 ease-out
+            ${isActive
+                    ? "bg-[#B22271] text-white border-[#B22271] shadow-md scale-105 text-xl md:text-2xl"
+                    : "bg-transparent text-[#B22271] border-[#B22271] hover:bg-[#B22271]/10 hover:scale-105 text-2xl md:text-3xl"}
+          `}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* ================= Sections ================= */}
-      {activeCategory === null
-        ? categories.map((cat) => {
+      {/* ===== محتوى القسم / عرض الكل ===== */}
+      <div className="min-h-screen">
+        {activeCatId === "all"
+          ? availableCategories.map((cat) => {
             const catItems = items.filter((i) => i.categoryId === cat.id);
             if (!catItems.length) return null;
-            return <CategorySection key={cat.id} category={cat} items={catItems} />;
+
+            return (
+              <CategorySection
+                key={cat.id}
+                category={cat}
+                items={catItems}
+                orderSystem={orderSystem}
+              />
+            );
           })
-        : categories
-            .filter((cat) => cat.id === activeCategory)
-            .map((cat) => {
-              const catItems = items.filter((i) => i.categoryId === cat.id);
-              if (!catItems.length) return null;
-              return <CategorySection key={cat.id} category={cat} items={catItems} />;
-            })}
+          : availableCategories.map((cat) => {
+            if (cat.id !== activeCatId) return null;
+
+            const catItems = items.filter((i) => i.categoryId === cat.id);
+            if (!catItems.length) return null;
+
+            return (
+              <CategorySection
+                key={cat.id}
+                category={cat}
+                items={catItems}
+                orderSystem={orderSystem}
+              />
+            );
+          })}
+      </div>
+
+
     </main>
   );
 }

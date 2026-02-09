@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import { ref, onValue, push, remove, update } from "firebase/database";
-import { FiDownload, FiUpload } from "react-icons/fi";
+import { ref, onValue, push, remove, update, get, set } from "firebase/database";
+import { FiDownload, FiSettings, FiUpload } from "react-icons/fi";
 
 import {
   signInWithEmailAndPassword,
@@ -19,6 +19,8 @@ import CategorySection from "../components/admin/CategorySection";
 import ItemSection from "../components/admin/ItemSection";
 import Popup from "../components/admin/Popup";
 import { type PopupState } from "../components/admin/types";
+import OrderSettingsModal from "../components/admin/OrderSettingsModal";
+import { FaDatabase } from "react-icons/fa";
 
 export default function Admin() {
   const location = useLocation();
@@ -48,6 +50,16 @@ export default function Admin() {
   const [editItemId, setEditItemId] = useState("");
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showOrderSettings, setShowOrderSettings] = useState(false);
+  const [orderSettings, setOrderSettings] = useState<any>(null);
+  // const [showEditGallery, setShowEditGallery] = useState(false);
+  const [settings, setSettings] = useState({
+    orderSystem: false,
+    orderSettings: { inRestaurant: false, takeaway: false, inPhone: "", outPhone: "" },
+    complaintsWhatsapp: "",
+    footerInfo: { address: "", phone: "", whatsapp: "", facebook: "", instagram: "", tiktok: "" },
+  });
+
 
   // ================= AUTH LISTENER =================
   useEffect(() => {
@@ -73,13 +85,59 @@ export default function Admin() {
     onValue(itemRef, (snap) => setItems(snap.val() || {}));
   }, [authOk]);
 
+  // ================= ORDER SETTINGS INITIALIZE =================
+  useEffect(() => {
+    if (!authOk) return;
+
+    const settingsRef = ref(db, "settings"); // ⚡ جلب كل الإعدادات
+    const initSettings = async () => {
+      const snap = await get(settingsRef);
+      if (!snap.exists()) {
+        // إذا مش موجود، نضيف إعدادات افتراضية كاملة
+        const defaultSettings = {
+          complaintsWhatsapp: "",
+          footerInfo: {
+            address: "",
+            facebook: "",
+            instagram: "",
+            phone: "",
+            tiktok: "",
+            whatsapp: ""
+          },
+          orderSettings: {
+            inRestaurant: false,
+            inPhone: "",
+            takeaway: false,
+            outPhone: "",
+          },
+          orderSystem: true
+        };
+        await set(settingsRef, defaultSettings);
+        setSettings(defaultSettings);
+        setOrderSettings(defaultSettings); // ⚡ للModal
+      } else {
+        const data = snap.val();
+        setSettings(data);
+        setOrderSettings(data); // ⚡ للModal
+      }
+    };
+    initSettings();
+  }, [authOk]);
+
   // ================= LOGIN =================
   const login = async () => {
-    if (!email || !password) return alert("أدخل البريد وكلمة المرور");
+    if (!email || !password) {
+      setToast("أدخل البريد وكلمة المرور");
+      setTimeout(() => setToast(""), 3000);
+      return;
+    }
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      setToast("تم تسجيل الدخول بنجاح ✅");
+      setTimeout(() => setToast(""), 3000);
     } catch {
-      alert("بيانات الدخول غير صحيحة");
+      setToast("بيانات الدخول غير صحيحة");
+      setTimeout(() => setToast(""), 3000);
     }
   };
 
@@ -93,8 +151,8 @@ export default function Admin() {
       await sendPasswordResetEmail(auth, resetEmail);
       setResetMessage("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك!");
     } catch (err: any) {
-      console.error(err);
-      setResetMessage(err.message);
+      setToast(err.message);
+      setTimeout(() => setToast(""), 3000);
     }
   };
 
@@ -102,6 +160,8 @@ export default function Admin() {
   const logout = async () => {
     await signOut(auth);
     setPopup({ type: null });
+    setToast("تم تسجيل الخروج بنجاح ✅");
+    setTimeout(() => setToast(""), 3000);
   };
 
   // ================= CATEGORY =================
@@ -170,22 +230,27 @@ export default function Admin() {
     setToast("  تم التعديل بنجاح ✅");
     setTimeout(() => setToast(""), 4000);
   };
-
   // ================= EXPORT EXCEL =================
   const exportToExcel = async () => {
     if (!categories || !items) {
       alert("البيانات لم يتم تحميلها بعد!");
       return;
     }
+
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Items");
+
     sheet.columns = [
       { header: "الاسم", key: "name", width: 30 },
       { header: "السعر", key: "price", width: 15 },
       { header: "سعر TW", key: "priceTw", width: 15 },
       { header: "القسم", key: "categoryName", width: 30 },
       { header: "المكونات", key: "ingredients", width: 40 },
+      { header: "متوفر", key: "visible", width: 10 },
+      { header: "مميزة", key: "star", width: 10 },
+      { header: "صورة", key: "image", width: 25 },
     ];
+
     Object.values(items).forEach((item: any) => {
       const categoryName = categories[item.categoryId]?.name ?? "غير محدد";
       sheet.addRow({
@@ -194,66 +259,87 @@ export default function Admin() {
         priceTw: item.priceTw || "",
         categoryName,
         ingredients: item.ingredients || "",
+        visible: item.visible ? "نعم" : "لا",
+        star: item.star ? "⭐" : "",
+        image: item.image || "",
       });
     });
+
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     saveAs(blob, "akila-menu.xlsx");
+
+    setToast("تم تصدير البيانات بنجاح ✅");
+    setTimeout(() => setToast(""), 3000);
   };
 
   // ================= IMPORT EXCEL =================
   const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     setLoading(true);
     try {
       const workbook = new ExcelJS.Workbook();
       const buffer = await file.arrayBuffer();
       await workbook.xlsx.load(buffer);
+
       const sheet = workbook.getWorksheet(1);
       if (!sheet) {
-        setToast("ملف غير صالح");
+        setToast("ملف غير صالح ❌");
         setLoading(false);
         return;
       }
+
       const categoryMap: Record<string, string> = {};
       Object.entries(categories).forEach(([id, cat]: any) => {
         categoryMap[cat.name.trim().toLowerCase()] = id;
       });
+
       const rows: any[] = [];
       sheet.eachRow((row, index) => {
-        if (index === 1) return;
+        if (index === 1) return; // تجاهل رأس الجدول
         rows.push({
           name: row.getCell(1).value?.toString().trim() || "",
           price: row.getCell(2).value?.toString().trim() || "",
           priceTw: row.getCell(3).value?.toString().trim() || "",
           categoryName: row.getCell(4).value?.toString().trim() || "",
           ingredients: row.getCell(5).value?.toString().trim() || "",
+          visible: row.getCell(6).value?.toString().trim().toLowerCase() === "نعم",
+          star: row.getCell(7).value?.toString().trim() === "⭐",
+          image: row.getCell(8).value?.toString().trim() || "",
         });
       });
+
       let addedCount = 0;
       for (const item of rows) {
         if (!item.name || !item.categoryName) continue;
         const categoryId = categoryMap[item.categoryName.toLowerCase()];
         if (!categoryId) continue;
+
         const exists = Object.values(items).some(
           (i: any) =>
             i.name.trim().toLowerCase() === item.name.toLowerCase() &&
             i.categoryId === categoryId
         );
         if (exists) continue;
+
         await push(ref(db, "items"), {
           name: item.name,
           price: item.price,
           priceTw: item.priceTw || "",
           categoryId,
           ingredients: item.ingredients || "",
+          visible: item.visible ?? true,
+          star: item.star ?? false,
+          featured: item.featured || "",
           createdAt: Date.now(),
         });
         addedCount++;
       }
+
       if (addedCount > 0) setToast(`تم إضافة ${addedCount} صنف جديد ✅`);
       else setToast("القائمة محدثة بالفعل ✅");
     } catch (err) {
@@ -266,33 +352,96 @@ export default function Admin() {
     }
   };
 
+
   // ================= EXPORT JSON =================
   const exportToJSON = () => {
+    // بناء بيانات JSON بشكل مرتب
     const data = {
-      categories: categories,
-      items: items,
+      categories,
+      items,
+      settings: {
+        orderSystem: settings.orderSystem,
+        orderSettings: {
+          inRestaurant: settings.orderSettings.inRestaurant,
+          takeaway: settings.orderSettings.takeaway,
+          inPhone: settings.orderSettings.inPhone,
+          outPhone: settings.orderSettings.outPhone,
+        },
+        complaintsWhatsapp: settings.complaintsWhatsapp,
+        footerInfo: {
+          address: settings.footerInfo.address || "",
+          phone: settings.footerInfo.phone || "",
+          whatsapp: settings.footerInfo.whatsapp || "",
+          facebook: settings.footerInfo.facebook || "",
+          instagram: settings.footerInfo.instagram || "",
+          tiktok: settings.footerInfo.tiktok || "",
+        },
+      },
       meta: { version: "1.0", exportedAt: Date.now() },
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "menu-data.json";
+    a.download = "menu.json";
     a.click();
     URL.revokeObjectURL(url);
-    setToast("📦 تم تصدير ملف JSON بنجاح");
+
+    setToast("📦 تم تصدير جميع البيانات والإعدادات بنجاح");
     setTimeout(() => setToast(""), 4000);
   };
+
+
+
+
+
+  // ================= SAVE ORDER SETTINGS =================
+  const handleSaveOrderSettings = async (newSettings: any) => {
+    try {
+      setLoading(true);
+
+      // تحديث Firebase
+      await update(ref(db, "settings"), newSettings);
+
+      // تحديث الـ state محلياً
+      setSettings(newSettings);
+      setOrderSettings(newSettings);
+
+      setToast("تم حفظ إعدادات الطلب بنجاح ✅");
+      setShowOrderSettings(false);
+      setTimeout(() => setToast(""), 3000);
+    } catch (err) {
+      console.error(err);
+      setToast("حدث خطأ أثناء الحفظ ❌");
+      setTimeout(() => setToast(""), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
 
   // ================= LOGIN UI =================
   if (!authOk) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0F0F0F]" dir="rtl">
+      <div className="min-h-screen flex items-center justify-center bg-[#231F20]" dir="rtl">
+        {toast && (
+          <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#B22271] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
+            {toast}
+          </div>
+        )}
+        {/* POPUP إعادة تعيين كلمة المرور */}
         {resetPasswordPopup && (
-          <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-50">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm">
-              <h2 className="text-xl font-bold mb-4 text-[#D3AC69] text-center">
+          <div className="fixed inset-0 bg-[#231F20]/80 flex justify-center items-center z-50 ">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm border-4 border-[#B22271]">
+              {/* الشعار */}
+              <div className="flex justify-center mb-4">
+                <img src="/hamada.png" alt="Logo" className="w-24 h-24 object-contain" />
+              </div>
+              <h2 className="text-xl font-bold mb-4 text-[#B22271] text-center">
                 إعادة تعيين كلمة المرور
               </h2>
               <input
@@ -308,7 +457,7 @@ export default function Admin() {
               <div className="flex justify-end gap-2">
                 <button
                   onClick={handleResetPassword}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition"
+                  className="bg-[#B22271] text-white px-4 py-2 rounded-xl hover:bg-[#B22271]/80 transition"
                 >
                   إرسال الرابط
                 </button>
@@ -325,12 +474,23 @@ export default function Admin() {
             </div>
           </div>
         )}
+
+        {/* POPUP تسجيل الدخول */}
         {!resetPasswordPopup && (
           <div
-            className="bg-white p-6 rounded-3xl w-full max-w-xs border"
-            style={{ borderColor: "#C9A24D" }}
+            className="bg-white p-6 rounded-3xl w-full max-w-xs border-4 flex flex-col items-center"
+            style={{ borderColor: "#B22271" }}
           >
-            <h1 className="text-xl font-bold mb-4 text-center text-[#e1a53d]">دخول الأدمن</h1>
+            {toast && (
+              <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#B22271] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
+                {toast}
+              </div>
+            )}
+            {/* الشعار */}
+            <div className="mb-4">
+              <img src="/logo_akila.png" alt="Logo" className="w-24 h-24 object-contain" />
+            </div>
+            <h1 className="text-xl font-bold mb-4 text-center text-[#B22271]">دخول الأدمن</h1>
             <input
               type="email"
               className="w-full p-3 border rounded-xl mb-3"
@@ -347,7 +507,7 @@ export default function Admin() {
             />
             <button
               onClick={login}
-              className="w-full py-3 rounded-xl font-bold bg-[#0F0F0F] text-[#D3AC69] hover:cursor-pointer"
+              className="w-full py-3 rounded-xl font-bold bg-[#B22271] text-white hover:cursor-pointer hover:bg-[#B22271]/80"
             >
               دخول
             </button>
@@ -363,9 +523,10 @@ export default function Admin() {
     );
   }
 
+
   // ================= ADMIN PANEL =================
   return (
-    <div className="min-h-screen w-full bg-[#0F0F0F] flex justify-center py-5 md:p-6" dir="rtl">
+    <div className="min-h-screen w-full bg-[#231F20] flex justify-center py-5 md:p-6" dir="rtl">
       {toast && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#B22271] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
           {toast}
@@ -384,8 +545,15 @@ export default function Admin() {
 
       <div className="w-full max-w-7xl px-8 sm:px-8 md:px-24">
         <div className="flex justify-between items-center mb-6 flex-wrap">
-          <h1 className="text-2xl font-bold text-[#B22271]">لوحة تحكم عكيلة</h1>
+          <h1 className="text-3xl font-extrabold text-[#B22271] mb-4">لوحة تحكم Akila</h1>
           <div className="flex gap-2 flex-wrap">
+            {/* Order Settings Button */}
+            <button
+              onClick={() => setShowOrderSettings(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-600 text-white font-bold hover:bg-yellow-500 transition hover:cursor-pointer"
+            >
+              <FiSettings size={18} />
+            </button>
             {/* Excel Buttons */}
             <button
               onClick={exportToExcel}
@@ -394,7 +562,8 @@ export default function Admin() {
               <FiUpload size={18} />
             </button>
             <button
-              onClick={() => document.getElementById("excelUpload")?.click()}
+              onClick={() => document.getElementById
+                ("excelUpload")?.click()}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition hover:cursor-pointer"
             >
               <FiDownload size={18} />
@@ -403,12 +572,11 @@ export default function Admin() {
             {/* JSON Buttons */}
             <button
               onClick={exportToJSON}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#B22271] text-white font-bold hover:bg-[#b64d87] transition hover:cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#940D11] text-white font-bold hover:bg-[#d02c37] transition hover:cursor-pointer"
             >
-              نسخة الأوفلاين
-              <FiUpload size={18} />
+              backup
+              <FaDatabase size={18} />
             </button>
-       
 
             {/* Logout */}
             <button
@@ -422,7 +590,6 @@ export default function Admin() {
 
         <CategorySection
           categories={categories}
-          items={items}
           setPopup={setPopup}
           newCategoryName={newCategoryName}
           setNewCategoryName={setNewCategoryName}
@@ -467,8 +634,17 @@ export default function Admin() {
           resetMessage={resetMessage}
           handleResetPassword={handleResetPassword}
           logout={logout}
-          />
-          </div>
-          </div>
-          );
-          }
+        />
+      </div>
+
+      {/* Order Settings Modal */}
+      {showOrderSettings && orderSettings && (
+        <OrderSettingsModal
+          setShowOrderSettings={setShowOrderSettings}
+          orderSettings={orderSettings} // ⚡ الآن تمرر كل الإعدادات
+          onSave={handleSaveOrderSettings}
+        />
+      )}
+    </div>
+  );
+}
