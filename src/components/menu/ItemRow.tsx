@@ -55,8 +55,8 @@ export default function ItemRow({ item, orderSystem }: Props) {
             src={item.image ? `/images/${item.image}` : "/logo_akila.png"}
             alt={item.name}
             loading="lazy"
-            className={`w-full h-full object-cover hover:scale-105 transition-all duration-500
-              ${unavailable ? "hover:none" : ""}`}
+            className={`w-full h-full object-cover transition-all duration-500
+              ${unavailable ? "hover:scale-100" : "hover:scale-105"}`}
             onError={(e) => {
               e.currentTarget.src = "/logo_akila.png";
             }}
@@ -70,7 +70,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
             className={`
               text-sm sm:text-xl font-extrabold leading-snug
               ${unavailable
-                ? "line-through text-gray-300 text-center"
+                ? "line-through text-gray-400 text-center"
                 : "text-[#B22271] text-center text-xl md:text-2xl"}
             `}
           >
@@ -82,7 +82,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
             <p
               className={`
                 text-[11px] sm:text-xs text-gray-500 line-clamp-2 text-center
-                ${unavailable ? "line-through" : ""}
+                ${unavailable ? "line-through text-gray-400" : ""}
               `}
             >
               {item.ingredients}
@@ -137,7 +137,9 @@ export default function ItemRow({ item, orderSystem }: Props) {
               })
               : (
                 // ===== عرض الأسعار جنب بعض بالفاصلة إذا النظام غير مفعل =====
-                <p className="text-sm md:text:lg font-extrabold text-[#b3aa07] text-center">
+                <p className={`text-sm md:text:lg font-extrabold text-[#b3aa07] text-center 
+                  ${unavailable ? "line-through text-gray-400" : ""}`}
+                >
                   {prices.map(p => p.trim() + "₪").join(" | ")}
                 </p>
               )

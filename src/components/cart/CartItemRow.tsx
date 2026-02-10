@@ -16,7 +16,7 @@ export default function CartItemRow({ item }: { item: CartItem }) {
             <div className="flex items-center gap-2">
                 <button
                     onClick={() => decrease(item.priceKey)}
-                    className="w-7 h-7 rounded-full bg-[#940D11] text-white"
+                    className="w-7 h-7 rounded-full bg-[#B22271] text-white"
                 >
                     −
                 </button>
@@ -27,7 +27,7 @@ export default function CartItemRow({ item }: { item: CartItem }) {
 
                 <button
                     onClick={() => increase(item.priceKey)}
-                    className="w-7 h-7 rounded-full bg-[#940D11] text-white"
+                    className="w-7 h-7 rounded-full bg-[#B22271] text-white"
                 >
                     +
                 </button>

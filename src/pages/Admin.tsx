@@ -10,7 +10,6 @@ import {
   signOut,
 } from "firebase/auth";
 import { FiLogOut } from "react-icons/fi";
-import { useLocation } from "react-router-dom";
 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
@@ -23,7 +22,6 @@ import OrderSettingsModal from "../components/admin/OrderSettingsModal";
 import { FaDatabase } from "react-icons/fa";
 
 export default function Admin() {
-  const location = useLocation();
   const [authOk, setAuthOk] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,7 +50,6 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [showOrderSettings, setShowOrderSettings] = useState(false);
   const [orderSettings, setOrderSettings] = useState<any>(null);
-  // const [showEditGallery, setShowEditGallery] = useState(false);
   const [settings, setSettings] = useState({
     orderSystem: false,
     orderSettings: { inRestaurant: false, takeaway: false, inPhone: "", outPhone: "" },
@@ -70,19 +67,26 @@ export default function Admin() {
   }, []);
 
   // ================= AUTO LOGOUT ON LEAVE /admin =================
-  useEffect(() => {
-    return () => {
-      signOut(auth);
-    };
-  }, [location.pathname]);
+  // useEffect(() => {
+  //   const handleBeforeUnload = () => {
+  //     signOut(auth);
+  //   };
+
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+  //   return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  // }, []);
+
 
   // ================= FIREBASE DATA =================
   useEffect(() => {
     if (!authOk) return;
+    setLoading(true); // 🔥 شغّل اللودر
+
     const catRef = ref(db, "categories");
     const itemRef = ref(db, "items");
     onValue(catRef, (snap) => setCategories(snap.val() || {}));
     onValue(itemRef, (snap) => setItems(snap.val() || {}));
+    setLoading(false); // 🔥 اطفّل اللودر
   }, [authOk]);
 
   // ================= ORDER SETTINGS INITIALIZE =================
