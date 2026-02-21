@@ -12,7 +12,7 @@ export default function CategorySection({ category, items, orderSystem }: Props)
     <section className="w-full h-full min-h-full px-4 md:px-0 py-6 flex flex-col">
       {/* عنوان القسم */}
       <div className="mb-8 flex items-center justify-center gap-4 w-full shrink-0">
-        <span className="flex-1 h-px bg-linear-to-r from-transparent via-[#B22271]/70 to-transparent"></span>
+        <span className="flex-1 h-2 bg-linear-to-r from-transparent via-[#B22271]/70 to-[#B22271] rounded-full"></span>
 
         <h2
           className="font-[Almarai] font-extrabold 
@@ -22,7 +22,7 @@ export default function CategorySection({ category, items, orderSystem }: Props)
           {category.name}
         </h2>
 
-        <span className="flex-1 h-px bg-linear-to-r from-transparent via-[#B22271]/70 to-transparent"></span>
+        <span className="flex-1 h-2 bg-linear-to-r from-[#B22271] via-[#B22271]/70 to-transparent rounded-full"></span>
       </div>
 
       {/* الأصناف */}

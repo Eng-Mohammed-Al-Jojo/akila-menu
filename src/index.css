@@ -437,3 +437,47 @@ body {
 .animate-logo-float {
   animation: logo-float 3s ease-in-out infinite;
 }
+
+@keyframes toast-show {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0
+  }
+
+  to {
+    opacity: 1
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.9)
+  }
+
+  to {
+    transform: scale(1)
+  }
+}
+
+.animate-toast-show {
+  animation: toast-show 0.25s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.25s ease-out;
+}

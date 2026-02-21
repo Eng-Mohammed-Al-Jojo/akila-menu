@@ -268,19 +268,29 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
       )}
 
       {/* ===== Tabs الأقسام ===== */}
-      <div className="top-0 z-30 bg-inherit py-3">
-        <div className="flex gap-2 px-3 items-center justify-center flex-wrap">
-
+      <div className="top-0 z-30 bg-inherit py-2">
+        <div
+          className="
+      flex gap-1.5 px-2
+      items-center justify-center
+      flex-wrap
+    "
+        >
           {/* زر عرض الكل */}
           <button
-            onClick={() => setActiveCatId("all")}
+            onClick={() => setActiveCatId('all')}
             className={`
-        px-5 py-2 rounded-full whitespace-nowrap
-        font-bold text-base md:text-lg
-        border transition-colors duration-300 ease-out
-        ${activeCatId === "all"
-                ? "bg-[#B22271] text-white border-[#B22271] shadow-md"
-                : "bg-transparent text-[#B22271] border-[#B22271] hover:bg-[#B22271]/10"}
+        px-3 py-1.5
+        sm:px-4 sm:py-2
+        rounded-full whitespace-nowrap
+        font-bold
+        text-sm sm:text-base md:text-lg
+        border
+        transition-all duration-200
+        ${activeCatId === 'all'
+                ? 'bg-[#B22271] text-white border-[#B22271] shadow'
+                : 'bg-transparent text-[#B22271] border-[#B22271]/70 hover:bg-[#B22271]/10'
+              }
       `}
           >
             الكل
@@ -298,12 +308,17 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
                 key={cat.id}
                 onClick={() => setActiveCatId(cat.id)}
                 className={`
-            px-5 py-2 rounded-full whitespace-nowrap
-            font-bold text-base md:text-lg
-            border transition-colors duration-300 ease-out
+            px-3 py-1.5
+            sm:px-4 sm:py-2
+            rounded-full whitespace-nowrap
+            font-bold
+            text-sm sm:text-base md:text-lg
+            border
+            transition-all duration-200
             ${isActive
-                    ? "bg-[#B22271] text-white border-[#B22271] shadow-md"
-                    : "bg-transparent text-[#B22271] border-[#B22271] hover:bg-[#B22271]/10"}
+                    ? 'bg-[#B22271] text-white border-[#B22271] shadow'
+                    : 'bg-transparent text-[#B22271] border-[#B22271]/70 hover:bg-[#B22271]/10'
+                  }
           `}
               >
                 {cat.name}
@@ -312,7 +327,6 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
           })}
         </div>
       </div>
-
 
       {/* ===== محتوى القسم / عرض الكل ===== */}
       <div className="min-h-screen">

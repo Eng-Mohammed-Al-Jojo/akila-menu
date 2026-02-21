@@ -1,7 +1,7 @@
 import { type Item } from "./Menu";
 import { useState } from "react";
 import { useCart } from "../../context/CartContext";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaSearchPlus } from "react-icons/fa";
 
 interface Props {
   item: Item;
@@ -13,8 +13,10 @@ export default function ItemRow({ item, orderSystem }: Props) {
   const unavailable = item.visible === false;
 
   const { addItem } = useCart();
+
   const [addedPrice, setAddedPrice] = useState<number | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const hasIngredients = !!item.ingredients;
 
@@ -36,42 +38,69 @@ export default function ItemRow({ item, orderSystem }: Props) {
         ${unavailable ? "opacity-60" : ""}
       `}
     >
-      {/* ===== Card ===== */}
+      {/* ================= Card ================= */}
       <div
-        className={`
+        className="
           relative flex flex-col h-full
-          rounded-xl overflow-hidden
-          shadow-lg shadow-[#B22271]/40
-          bg-linear-to-br from-white/90 to-white/95
-          border ${unavailable ? "border-gray-400/40" : "border-[#a70a05]/40"}
-          shadow-md transition-all duration-500
+          rounded-2xl overflow-hidden
+          bg-white
+          border border-[#B22271]/30
+          shadow-xl shadow-[#B22271]/30
+          transition-all duration-500
+          hover:-translate-y-1
           active:scale-[0.98]
           font-[Almarai] font-bold
-        `}
+        "
       >
-        {/* ===== Image ===== */}
-        <div className="w-full h-32 sm:h-36 bg-black/20 overflow-hidden">
+        {/* ================= Image ================= */}
+        <div
+          className="
+            relative w-full h-40 sm:h-44
+            overflow-hidden cursor-pointer group
+          "
+          onClick={() => setPreviewImage(item.image || "/logo_akila.png")}
+        >
           <img
             src={item.image ? `/images/${item.image}` : "/logo_akila.png"}
             alt={item.name}
             loading="lazy"
-            className={`w-full h-full object-cover transition-all duration-500
-              ${unavailable ? "hover:scale-100" : "hover:scale-105"}`}
+            className="
+              w-full h-full object-cover
+              transition-transform duration-700
+              group-hover:scale-110
+            "
             onError={(e) => {
               e.currentTarget.src = "/logo_akila.png";
             }}
           />
-        </div>/ // /
 
-        {/* ===== Content ===== */}
-        <div className="p-3 flex flex-col gap-1 flex-1 -mt-8">
+          {/* Overlay */}
+
+
+          {/* Zoom Icon */}
+          <div
+            className="
+              absolute bottom-2 right-2
+              bg-white/90 text-[#B22271]
+              p-2 rounded-full shadow
+              opacity-0 group-hover:opacity-100
+              transition
+            "
+          >
+            <FaSearchPlus />
+          </div>
+        </div>
+
+        {/* ================= Content ================= */}
+        <div className="p-3 flex flex-col gap-1 flex-1 -mt-2">
           {/* Name */}
           <h3
             className={`
-              text-sm sm:text-xl font-extrabold leading-snug
+              text-center text-xl md:text-2xl font-extrabold
               ${unavailable
-                ? "line-through text-gray-400 text-center"
-                : "text-[#B22271] text-center text-xl md:text-2xl"}
+                ? "line-through text-gray-400"
+                : "text-[#B22271]"
+              }
             `}
           >
             {item.name}
@@ -81,7 +110,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
           {hasIngredients && (
             <p
               className={`
-                text-[11px] sm:text-xs text-gray-500 line-clamp-2 text-center
+                text-xs text-right text-gray-600 line-clamp-2
                 ${unavailable ? "line-through text-gray-400" : ""}
               `}
             >
@@ -89,10 +118,10 @@ export default function ItemRow({ item, orderSystem }: Props) {
             </p>
           )}
 
-          {/* ===== Prices + Add ===== */}
+          {/* ================= Prices ================= */}
           <div className="mt-auto flex flex-col gap-2">
-            {orderSystem
-              ? prices.map((p) => {
+            {orderSystem ? (
+              prices.map((p) => {
                 const price = Number(p.trim());
                 const isAdded = addedPrice === price;
 
@@ -100,14 +129,15 @@ export default function ItemRow({ item, orderSystem }: Props) {
                   <div
                     key={price}
                     className={`
-              flex items-center justify-between
-              px-2 py-1.5 rounded-xl
-              bg-white/80 border border-[#B22271]/30
-              transition
-              ${unavailable ? "opacity-50 line-through" : ""}
-            `}
+                      flex items-center justify-between
+                      px-3 py-2 rounded-xl
+                      bg-white/90
+                      border border-[#B22271]/30
+                      transition
+                      ${unavailable ? "opacity-50 line-through" : ""}
+                    `}
                   >
-                    <span className="text-md font-extrabold text-[#b3aa07]">
+                    <span className="text-lg font-extrabold text-[#b3aa07]">
                       {price}₪
                     </span>
 
@@ -115,47 +145,48 @@ export default function ItemRow({ item, orderSystem }: Props) {
                       <button
                         onClick={() => handleAdd(price)}
                         className={`
-                  w-7 h-7 flex items-center justify-center
-                  rounded-md text-white font-bold
-                  transition-all duration-300
-                  active:scale-90
-                  ${isAdded
-                            ? "bg-[#B22271] text-xl md:text-2xl"
+                          w-8 h-8 flex items-center justify-center
+                          rounded-lg text-white font-bold
+                          transition-all duration-300
+                          active:scale-90
+                          ${isAdded
+                            ? "bg-[#B22271] text-xl"
                             : "bg-[#B22271]/90 hover:scale-110"
                           }
-                `}
+                        `}
                       >
                         {isAdded ? (
                           <FaCheck className="animate-pulse" />
                         ) : (
-                          <span className="text-lg md:text-xl font-extrabold">+</span>
+                          <span className="text-xl">+</span>
                         )}
                       </button>
                     )}
                   </div>
                 );
               })
-              : (
-                // ===== عرض الأسعار جنب بعض بالفاصلة إذا النظام غير مفعل =====
-                <p className={`text-sm md:text:lg font-extrabold text-[#b3aa07] text-center 
-                  ${unavailable ? "line-through text-gray-400" : ""}`}
-                >
-                  {prices.map(p => p.trim() + "₪").join(" | ")}
-                </p>
-              )
-            }
+            ) : (
+              <p
+                className={`
+                  text-center text-md font-bold text-[#b3aa07]
+                  ${unavailable ? "line-through text-gray-400" : ""}
+                `}
+              >
+                {prices.map((p) => p.trim() + "₪").join(" | ")}
+              </p>
+            )}
           </div>
         </div>
       </div>
-      {/* ===== Toast ===== */}
+
+      {/* ================= Toast ================= */}
       {showToast && (
         <div
           className="
-            absolute top-2 left-1/2
-            -translate-x-1/2
+            absolute top-2 left-1/2 -translate-x-1/2
             bg-[#B22271]
             text-white font-bold
-            px-3 py-1.5 rounded-xl
+            px-4 py-1.5 rounded-xl
             shadow-lg
             flex items-center gap-2
             animate-toast-show
@@ -165,6 +196,34 @@ export default function ItemRow({ item, orderSystem }: Props) {
         >
           <FaCheck className="w-4 h-4" />
           <span className="text-xs">تمت الإضافة</span>
+        </div>
+      )}
+
+      {/* ================= Image Preview Modal ================= */}
+      {previewImage && (
+        <div
+          className="
+            fixed inset-0 z-999
+            bg-black/80
+            flex items-center justify-center
+            p-4
+            animate-fade-in
+          "
+          onClick={() => setPreviewImage(null)}
+        >
+          <img
+            src={
+              previewImage.startsWith("/")
+                ? previewImage
+                : `/images/${previewImage}`
+            }
+            className="
+              max-w-full max-h-[90vh]
+              rounded-2xl
+              shadow-2xl
+              animate-scale-in
+            "
+          />
         </div>
       )}
     </div>
