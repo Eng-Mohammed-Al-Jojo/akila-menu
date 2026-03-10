@@ -78,10 +78,10 @@ export default function Footer() {
     <footer
       className="
         mt-20
-        bg-linear-to-t from-[#B22271] via-[#B22271]/95 to-[#B22271]/90
-        text-[#F5F8F7]
+        bg-primary
+        text-primary-foreground
         rounded-t-3xl
-        border-t border-[#FDB143]/30
+        border-t border-primary-foreground/10
         font-[Almarai]
       "
     >
@@ -120,13 +120,13 @@ export default function Footer() {
                     rel="noopener noreferrer"
                     className="
                       w-10 h-10 rounded-full flex items-center justify-center
-                      bg-white text-[#B22271]
+                      bg-background text-primary
                       hover:scale-110
-                      hover:shadow-lg shadow-white shadow-[0_0_25px_rgba(253,177,67,0.6)]
+                      hover:shadow-lg shadow-primary-foreground/20
                       transition-all duration-300
                     "
                   >
-                    <Icon className="text-[#B22271] text-lg" />
+                    <Icon className="text-primary text-lg" />
                   </a>
                 )
             )}
@@ -138,7 +138,7 @@ export default function Footer() {
               onClick={() => setShowFeedbackModal(true)}
               className="
                 mt-4 w-full max-w-xs flex items-center justify-center gap-2
-                bg-white text-[#B22271]
+                bg-background text-primary
                 rounded-2xl
                 py-3 px-4
                 shadow-lg

@@ -97,17 +97,17 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
         <>
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-                    <div className="bg-white w-full max-w-md rounded-3xl p-6 text-[#F7F3E8] relative max-h-[90vh] overflow-y-auto mx-4">
+                    <div className="bg-card w-full max-w-md rounded-3xl p-6 text-foreground relative max-h-[90vh] overflow-y-auto mx-4 border border-border shadow-xl">
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 text-xl text-[#B22271] hover:text-[#B22271]/70"
+                            className="absolute top-4 right-4 text-xl text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                         >
                             <FaTimes />
                         </button>
 
                         {!orderSent ? (
                             <>
-                                <h2 className="text-2xl font-extrabold text-center mb-4 text-[#B22271]">
+                                <h2 className="text-2xl font-extrabold text-center mb-4 text-primary font-[Almarai]">
                                     سلة الطلب 🛒
                                 </h2>
 
@@ -116,7 +116,7 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
                                         <p className="text-lg font-bold">السلة فارغة</p>
                                         <button
                                             onClick={onClose}
-                                            className="px-6 py-2 rounded-full bg-[#B22271] font-bold text-white"
+                                            className="px-6 py-2 rounded-full bg-primary font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
                                         >
                                             إغلاق
                                         </button>
@@ -127,13 +127,13 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
                                             {items.map(item => (
                                                 <div
                                                     key={item.priceKey}
-                                                    className="flex items-center justify-between bg-[#F7F3E8]/30 rounded-xl p-3"
+                                                    className="flex items-center justify-between bg-muted/50 rounded-xl p-3 border border-border/50"
                                                 >
                                                     <div className="flex-1">
-                                                        <p className="font-bold text-sm text-black ">
+                                                        <p className="font-bold text-sm text-foreground">
                                                             {item.name}
                                                         </p>
-                                                        <p className="text-xs text-black ">
+                                                        <p className="text-xs text-muted-foreground mt-0.5">
                                                             {item.qty} × {item.selectedPrice}₪
                                                         </p>
                                                     </div>
@@ -143,12 +143,12 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
                                                             onClick={() =>
                                                                 decrease(item.priceKey)
                                                             }
-                                                            className="w-7 h-7 rounded-full bg-[#B22271] flex items-center justify-center"
+                                                            className="w-7 h-7 rounded-full bg-[#B22271] text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors"
                                                         >
                                                             <FaMinus size={10} />
                                                         </button>
 
-                                                        <span className="min-w-[20px] text-center text-sm font-bold text-black">
+                                                        <span className="min-w-[20px] text-center text-sm font-bold text-foreground">
                                                             {item.qty}
                                                         </span>
 
@@ -156,7 +156,7 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
                                                             onClick={() =>
                                                                 increase(item.priceKey)
                                                             }
-                                                            className="w-7 h-7 rounded-full bg-[#B22271] flex items-center justify-center"
+                                                            className="w-7 h-7 rounded-full bg-[#B22271] text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors"
                                                         >
                                                             <FaPlus size={10} />
                                                         </button>
@@ -165,9 +165,9 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
                                             ))}
                                         </div>
 
-                                        <div className="text-lg font-bold flex justify-between mb-4">
-                                            <span className="text-[#B22271]">الإجمالي</span>
-                                            <span className="text-[#B22271]">{totalPrice}₪</span>
+                                        <div className="text-lg font-bold flex justify-between mb-4 mt-6 border-t border-border pt-4">
+                                            <span className="text-foreground">الإجمالي</span>
+                                            <span className="text-primary font-extrabold">{totalPrice}₪</span>
                                         </div>
 
                                         <OrderTabs
@@ -180,23 +180,23 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
                             </>
                         ) : (
                             <div className="space-y-4 text-center">
-                                <h2 className="text-2xl font-bold text-[#B22271]">
+                                <h2 className="text-2xl font-bold text-primary mb-2">
                                     {orderType === "in"
                                         ? "🍽️ طلب داخل المطعم"
                                         : "🛍️ طلب تيك أواي"}
                                 </h2>
 
-                                <div className="bg-black/20 p-4 rounded-2xl max-h-72 overflow-auto text-left whitespace-pre-wrap text-sm">
+                                <div className="bg-muted p-4 rounded-xl border border-border max-h-72 overflow-auto text-left whitespace-pre-wrap text-sm text-foreground">
                                     {renderMessage(lastMessage)}
-                                    <div className="mt-3 font-bold flex justify-between">
+                                    <div className="mt-4 pt-3 border-t border-border font-bold flex justify-between text-lg">
                                         <span>💰 الإجمالي</span>
-                                        <span>{totalPrice}₪</span>
+                                        <span className="text-primary">{totalPrice}₪</span>
                                     </div>
                                 </div>
 
                                 <button
                                     onClick={onClose}
-                                    className="w-full py-3 rounded-full bg-[#B22271] font-bold"
+                                    className="w-full py-3 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors"
                                 >
                                     أغلق
                                 </button>
@@ -207,7 +207,7 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
             )}
 
             {toast && (
-                <div className="fixed top-6 right-6 z-50 bg-[#B22271] text-white px-6 py-3 rounded-2xl font-bold shadow-2xl animate-pulse">
+                <div className="fixed top-6 right-6 z-50 bg-primary text-primary-foreground px-6 py-3 rounded-2xl font-bold shadow-2xl animate-fade-in-out">
                     {toast}
                 </div>
             )}

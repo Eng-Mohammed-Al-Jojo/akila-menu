@@ -7,6 +7,7 @@ import CategorySection from "./CategorySection";
 
 /* ================= Types ================= */
 export interface Category {
+  icon: string;
   id: string;
   name: string;
   available?: boolean;
@@ -77,6 +78,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
           available: v.available !== false,
           order: v.order ?? 0,
           createdAt: v.createdAt || 0,
+          icon: v.icon || "",
         })
       ).sort((a, b) => a.order - b.order);
 
@@ -153,6 +155,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
             available: v.available !== false,
             order: v.order ?? 0,
             createdAt: v.createdAt || 0,
+            icon: v.icon || "",
           }))
           : [];
         cats.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -217,7 +220,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
           <div
             className="
             absolute w-96 h-96 rounded-full
-            border border-[#B22271]/40
+            border border-primary/40
             animate-spin
             [animation-duration:8s]
           "
@@ -227,7 +230,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
           <div
             className="
             absolute w-80 h-80 rounded-full
-            border border-[#B22271]/20
+            border border-primary/20
             animate-spin
             [animation-duration:14s]
             [animation-direction:reverse]
@@ -257,46 +260,33 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
 
   /* ================= Render ================= */
   return (
-    <main className="max-w-4xl mx-auto px-0 pb-10 font-[Alamiri] text-[#F5F8F7]">
+    <main className="max-w-4xl mx-auto px-0 pb-10 font-[Cairo] text-[#F5F8F7]">
       {toast && (
         <div
-          className={`fixed top-6 right-6 px-4 py-3 rounded-2xl font-bold shadow-2xl z-50 text-white
-          ${toast.color === "green" ? "bg-[#B22271]" : "bg-[#B22271]"}`}
+          className={`fixed top-6 right-6 px-4 py-3 rounded-2xl font-bold shadow-2xl z-50 text-primary-foreground
+          ${toast.color === "green" ? "bg-primary" : "bg-destructive"}`}
         >
           {toast.message}
         </div>
       )}
 
-      {/* ===== Tabs الأقسام ===== */}
-      <div className="top-0 z-30 bg-inherit py-2">
-        <div
-          className="
-      flex gap-1.5 px-2
-      items-center justify-center
-      flex-wrap
-    "
-        >
-          {/* زر عرض الكل */}
+      {/* ===== Premium Category Tabs ===== */}
+      <div className="top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/50 mb-6">
+        <div className="flex gap-2 px-4 py-3 overflow-x-auto no-scrollbar md:justify-center">
+
+          {/* زر الكل */}
           <button
-            onClick={() => setActiveCatId('all')}
-            className={`
-        px-3 py-1.5
-        sm:px-4 sm:py-2
-        rounded-full whitespace-nowrap
-        font-bold
-        text-sm sm:text-base md:text-lg
-        border
-        transition-all duration-200
-        ${activeCatId === 'all'
-                ? 'bg-[#B22271] text-white border-[#B22271] shadow'
-                : 'bg-transparent text-[#B22271] border-[#B22271]/70 hover:bg-[#B22271]/10'
-              }
-      `}
+            onClick={() => setActiveCatId("all")}
+            className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200
+      ${activeCatId === "all"
+                ? "bg-[#B22271] text-primary-foreground shadow-md"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
           >
             الكل
           </button>
 
-          {/* بقية التابس */}
+          {/* بقية الأقسام */}
           {availableCategories.map((cat) => {
             const hasItems = items.some((i) => i.categoryId === cat.id);
             if (!hasItems) return null;
@@ -307,19 +297,11 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
               <button
                 key={cat.id}
                 onClick={() => setActiveCatId(cat.id)}
-                className={`
-            px-3 py-1.5
-            sm:px-4 sm:py-2
-            rounded-full whitespace-nowrap
-            font-bold
-            text-sm sm:text-base md:text-lg
-            border
-            transition-all duration-200
-            ${isActive
-                    ? 'bg-[#B22271] text-white border-[#B22271] shadow'
-                    : 'bg-transparent text-[#B22271] border-[#B22271]/70 hover:bg-[#B22271]/10'
-                  }
-          `}
+                className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200
+          ${isActive
+                    ? "bg-[#B22271] text-primary-foreground shadow-md"
+                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
               >
                 {cat.name}
               </button>
@@ -327,9 +309,8 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
           })}
         </div>
       </div>
-
       {/* ===== محتوى القسم / عرض الكل ===== */}
-      <div className="min-h-screen">
+      <div className="min-h-screen px-2">
         {activeCatId === "all"
           ? availableCategories.map((cat) => {
             const catItems = items.filter((i) => i.categoryId === cat.id);

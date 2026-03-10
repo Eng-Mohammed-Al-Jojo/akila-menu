@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { ref, get } from "firebase/database";
 import { db } from "../../firebase";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Props {
     show: boolean;
@@ -13,8 +14,8 @@ interface Item {
     name: string;
     description?: string;
     price: string;
-    image?: string; // اسم الصورة
-    star?: boolean;    // ⭐ نجمة
+    image?: string;
+    star?: boolean;
     visible?: boolean;
 }
 
@@ -26,17 +27,19 @@ export default function FeaturedModal({ show, onClose }: Props) {
         if (!show) return;
 
         const fetchStarItems = async () => {
+            setLoading(true);
             try {
                 const snap = await get(ref(db, "items"));
                 if (snap.exists()) {
                     const data = snap.val();
 
-                    // ✅ Filter items with star = true and visible
                     const starItems = Object.entries(data)
                         .map(([id, item]: any) => ({ id, ...item }))
-                        .filter(item => item.star === true && item.visible !== false);
+                        .filter((item) => item.star === true && item.visible !== false);
 
                     setItems(starItems);
+                } else {
+                    setItems([]);
                 }
             } catch (err) {
                 console.error(err);
@@ -48,99 +51,127 @@ export default function FeaturedModal({ show, onClose }: Props) {
         fetchStarItems();
     }, [show]);
 
-    if (!show) return null;
+    useEffect(() => {
+        if (show) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [show]);
 
     return (
-        <div className="fixed inset-0 z-999 flex items-center justify-center">
-            {/* Overlay */}
-            <div
-                onClick={onClose}
-                className="absolute inset-0 bg-white/80 backdrop-blur-md"
-            />
+        <AnimatePresence>
+            {show && (
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
 
-            {/* Modal */}
-            <div className="relative w-[90%] max-w-2xl bg-white/80 rounded-3xl px-6 py-8 shadow-inner shadow-[#B22271]">
-                {/* Close */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 left-4 text-[#B22271]"
-                >
-                    <FaTimes size={22} />
-                </button>
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-background/60 backdrop-blur-md"
+                    />
 
-                <h2 className="text-center text-3xl font-extrabold mb-6 text-[#B22271]">
-                    ⭐ الأصناف الأكثر طلباً
-                </h2>
-
-                {loading ? (
-                    <div className="text-center py-20 text-gray-400">
-                        جاري التحميل...
-                    </div>
-                ) : items.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400">
-                        لا يوجد أصناف مميزة حالياً
-                    </div>
-                ) : (
-                    <div
-                        className="
-                            flex
-                            overflow-x-auto
-                            snap-x snap-mandatory
-                            scroll-smooth
-                            scrollbar-hide
-                        "
+                    {/* Modal */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                        className="relative z-10 w-full max-w-3xl bg-card border border-border/50 rounded-3xl p-6 md:p-8 shadow-2xl"
                     >
-                        {items.map((item) => (
-                            <div
-                                key={item.id}
-                                className="w-full shrink-0 snap-center px-2"
-                            >
-                                <div className="bg-white/80 rounded-3xl overflow-hidden shadow-xl">
-                                    {/* Image */}
-                                    <div className="flex justify-center mt-4">
-                                        <div className="
-                                            w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64
-                                            rounded-full
-                                            overflow-hidden
-                                            bg-black
-                                            shrink-0
-                                            shadow-[0_10px_40px_rgba(178,34,113,0.4)]
-                                            flex items-center justify-center
-                                        ">
-                                            <img
-                                                src={item.image ? `/images/${item.image}` : `/logo_akila.png`}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover bg-white"
-                                            />
-                                        </div>
-                                    </div>
 
-                                    {/* Content */}
-                                    <div className="p-6 text-center">
-                                        <h3 className="text-2xl font-bold mb-2">
-                                            {item.name}
-                                        </h3>
+                        {/* Close Button */}
+                        <button
+                            onClick={onClose}
+                            className="absolute top-6 right-6 z-20 text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full hover:bg-muted cursor-pointer"
+                        >
+                            <FaTimes size={20} />
+                        </button>
 
-                                        {item.description && (
-                                            <p className="text-base text-gray-300 mb-4">
-                                                {item.description}
-                                            </p>
-                                        )}
+                        {/* Title */}
+                        <h2 className="text-center text-2xl md:text-3xl font-extrabold mb-8 text-[#B22271] drop-shadow-sm font-[Almarai]">
+                            ⭐ الأصناف المميزة
+                        </h2>
 
-                                        <div className="text-2xl font-extrabold text-[#B22271]">
-                                            {item.price}₪
-                                        </div>
-                                    </div>
-                                </div>
+                        {/* Loading */}
+                        {loading ? (
+                            <div className="text-center py-20 text-muted-foreground font-[Almarai] animate-pulse">
+                                جاري التحميل...
                             </div>
-                        ))}
-                    </div>
-                )}
+                        ) : items.length === 0 ? (
+                            <div className="text-center py-20 text-muted-foreground font-[Almarai]">
+                                لا يوجد أصناف مميزة حالياً
+                            </div>
+                        ) : (
+                            <div className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden py-4 gap-4 px-2 -mx-2">
 
-                <p className="text-center text-sm text-gray-400 mt-4">
-                    اسحب يمين أو يسار للتنقل
-                </p>
-            </div>
-        </div>
+                                {items.map((item) => (
+                                    <motion.div
+                                        whileHover={{ y: -5 }}
+                                        key={item.id}
+                                        className="w-[85%] sm:w-[60%] shrink-0 snap-center"
+                                    >
+                                        <div className="bg-card rounded-3xl overflow-hidden shadow-sm border border-border/60 h-full flex flex-col transition-all duration-300 hover:shadow-lg">
+
+                                            {/* Image */}
+                                            <div className="flex justify-center mt-6">
+                                                <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden shadow-lg ring-4 ring-background bg-muted/30">
+
+                                                    <img
+                                                        src={
+                                                            item.image
+                                                                ? `/images/${item.image}`
+                                                                : `/logo_akila.png`
+                                                        }
+                                                        alt={item.name}
+                                                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = "/logo_akila.png";
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Content */}
+                                            <div className="p-6 text-center flex-1 flex flex-col font-[Almarai]">
+
+                                                <h3 className="text-xl md:text-2xl font-bold mb-3 text-foreground tracking-tight">
+                                                    {item.name}
+                                                </h3>
+
+                                                {item.description && (
+                                                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed flex-1">
+                                                        {item.description}
+                                                    </p>
+                                                )}
+
+                                                <div className="text-2xl font-extrabold text-[#b3aa07] mt-auto pt-4 border-t border-border/40">
+                                                    {item.price} ₪
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+
+                            </div>
+                        )}
+
+                        {!loading && items.length > 0 && (
+                            <p className="text-center text-xs text-muted-foreground mt-8 font-[Almarai] opacity-70">
+                                اسحب يمين أو يسار للتنقل
+                            </p>
+                        )}
+
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
     );
 }

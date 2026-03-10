@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { FiPlus, FiTrash2, FiEdit, FiCheck } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiEdit, FiCheck, FiCoffee, FiUser } from "react-icons/fi";
+import { GiHamburger, GiPizzaSlice } from "react-icons/gi";
+import { MdFastfood, MdLocalDrink } from "react-icons/md";
 import { db } from "../../firebase";
 import { ref, update } from "firebase/database";
 
@@ -32,6 +34,43 @@ interface Props {
 }
 
 /* =======================
+   الأيقونات المتاحة
+======================= */
+const AVAILABLE_ICONS: Record<string, React.ElementType> = {
+  FiCoffee,
+  FiUser,
+  GiHamburger,
+  GiPizzaSlice,
+  MdFastfood,
+  MdLocalDrink,
+};
+
+/* =======================
+   Icon Picker
+======================= */
+const IconPicker: React.FC<{
+  selectIcon: (iconKey: string) => void;
+  close: () => void;
+}> = ({ selectIcon, close }) => (
+  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div className="bg-white p-4 rounded-xl grid grid-cols-4 gap-4 max-w-xs">
+      {Object.entries(AVAILABLE_ICONS).map(([key, IconComponent]) => (
+        <button
+          key={key}
+          onClick={() => {
+            selectIcon(key);
+            close();
+          }}
+          className="p-2 hover:bg-gray-100 rounded-lg flex items-center justify-center text-2xl"
+        >
+          <IconComponent />
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+/* =======================
    العنصر القابل للسحب
 ======================= */
 const SortableCategory: React.FC<{
@@ -43,6 +82,7 @@ const SortableCategory: React.FC<{
   startEditing: (id: string, name: string) => void;
   toggleAvailability: (id: string, current: boolean) => void;
   setPopup: (popup: PopupState) => void;
+  openIconPicker: (catId: string) => void;
 }> = ({
   cat,
   editingId,
@@ -52,6 +92,7 @@ const SortableCategory: React.FC<{
   startEditing,
   toggleAvailability,
   setPopup,
+  openIconPicker,
 }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({ id: cat.id });
@@ -62,31 +103,19 @@ const SortableCategory: React.FC<{
       touchAction: "none",
     };
 
+    const IconComponent = cat.icon ? AVAILABLE_ICONS[cat.icon] : null;
+
     return (
       <div
         ref={setNodeRef}
         style={style}
         {...attributes}
-        className="
-        relative
-        bg-white
-        rounded-2xl
-        shadow-sm
-        flex
-        overflow-hidden
-      "
+        className="relative bg-card rounded-xl border border-border/60 shadow-sm flex overflow-hidden transition hover:shadow-md"
       >
         {/* Drag Rail */}
         <div
           {...listeners}
-          className="
-          cursor-grab select-none
-          bg-linear-to-b from-gray-300 to-gray-200
-          w-12 sm:w-10
-          flex items-center justify-center
-          active:scale-95
-          transition
-        "
+          className="cursor-grab select-none bg-gray-200 w-12 sm:w-10 flex items-center justify-center active:scale-95 transition"
         >
           <HiOutlineArrowsUpDown className="w-5 h-5 md:w-6 md:h-6 text-gray-700" />
         </div>
@@ -101,6 +130,13 @@ const SortableCategory: React.FC<{
                 onChange={(e) => setTempName(e.target.value)}
               />
               <button
+                onClick={() => openIconPicker(cat.id)}
+                className="text-purple-600 p-2 rounded-xl hover:bg-purple-50 transition"
+              >
+                اختر أيقونة
+              </button>
+              {IconComponent && <IconComponent className="text-xl" />}
+              <button
                 onClick={() => saveEdit(cat.id)}
                 className="text-green-600 p-2"
               >
@@ -108,9 +144,10 @@ const SortableCategory: React.FC<{
               </button>
             </div>
           ) : (
-            <span className="text-lg font-bold text-gray-800">
-              {cat.name}
-            </span>
+            <div className="flex items-center gap-2">
+              {IconComponent && <IconComponent className="text-xl" />}
+              <span className="text-lg font-bold text-gray-800">{cat.name}</span>
+            </div>
           )}
 
           <div className="flex items-center justify-between">
@@ -132,12 +169,12 @@ const SortableCategory: React.FC<{
 
             <button
               onClick={() => toggleAvailability(cat.id, cat.available ?? true)}
-              className={`relative w-14 h-7 rounded-full transition-colors
-              ${cat.available ? "bg-green-500" : "bg-gray-300"}`}
+              className={`relative w-14 h-7 rounded-full transition-colors ${cat.available ? "bg-green-500" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all
-                ${cat.available ? "translate-x-7 scale-110" : ""}`}
+                className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all ${cat.available ? "translate-x-7 scale-110" : ""
+                  }`}
               />
             </button>
           </div>
@@ -158,6 +195,7 @@ const CategorySection: React.FC<Props> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempName, setTempName] = useState("");
   const [openCategories, setOpenCategories] = useState(false);
+  const [iconPickerCatId, setIconPickerCatId] = useState<string | null>(null);
 
   const startEditing = (id: string, name: string) => {
     setEditingId(id);
@@ -172,9 +210,13 @@ const CategorySection: React.FC<Props> = ({
   };
 
   const toggleAvailability = async (id: string, current: boolean) => {
-    await update(ref(db, `categories/${id}`), {
-      available: !current,
-    });
+    await update(ref(db, `categories/${id}`), { available: !current });
+  };
+
+  const selectIcon = async (iconKey: string) => {
+    if (!iconPickerCatId) return;
+    await update(ref(db, `categories/${iconPickerCatId}`), { icon: iconKey });
+    setIconPickerCatId(null);
   };
 
   const categoriesArray = Object.entries(categories)
@@ -183,9 +225,7 @@ const CategorySection: React.FC<Props> = ({
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 150, tolerance: 5 },
-    })
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
   );
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -206,95 +246,87 @@ const CategorySection: React.FC<Props> = ({
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={categoriesArray.map((c) => c.id)}
-        strategy={verticalListSortingStrategy}
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <div
-          className="bg-white p-4 rounded-3xl mb-6 border-4"
-          style={{ borderColor: "#B22271" }}
+        <SortableContext
+          items={categoriesArray.map((c) => c.id)}
+          strategy={verticalListSortingStrategy}
         >
-          <h2 className="font-bold mb-3 text-2xl">الأقسام</h2>
+          <div className="bg-card rounded-xl border border-border shadow-sm p-6 mb-8">
+            <h2 className="font-bold mb-4 text-2xl font-[Almarai] text-foreground">إدارة الأقسام</h2>
 
-
-
-          {/* إضافة قسم */}
-          <div className="flex gap-2 flex-wrap mb-4">
-            <input
-              className="flex-1 p-2 border rounded-xl min-w-[160px]"
-              placeholder="اسم القسم"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-            />
-            <button
-              onClick={() => setPopup({ type: "addCategory" })}
-              className="px-4 rounded-xl bg-[#B22271] text-white hover:bg-[#B22271]/80"
-            >
-              <FiPlus className="text-xl" />
-            </button>
-          </div>
-          {/* زر عرض الأقسام */}
-          <button
-            onClick={() => setOpenCategories((p) => !p)}
-            className="
-              w-full mb-4
-              flex items-center justify-between
-              px-4 py-3
-              bg-gray-100
-              rounded-xl
-              font-bold
-              hover:bg-gray-200
-              transition
-            "
-          >
-            <span>عرض الأقسام</span>
-
-            <div className="flex items-center gap-2">
-              <span className="bg-[#B22271] text-white text-sm px-2 py-0.5 rounded-full">
-                {categoriesArray.length}
-              </span>
-
-              <HiChevronDown
-                className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${openCategories ? "rotate-180" : "rotate-0"
-                  }`}
+            {/* إضافة قسم */}
+            <div className="flex gap-2 flex-wrap mb-6">
+              <input
+                className="flex-1 px-4 py-2 border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all rounded-xl min-w-[160px]"
+                placeholder="اسم القسم"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
               />
+              <button
+                onClick={() => setPopup({ type: "addCategory" })}
+                className="px-5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition flex items-center justify-center shadow-sm"
+              >
+                <FiPlus className="text-xl" />
+              </button>
             </div>
-          </button>
 
-          {/* Accordion Animation */}
-          <div
-            className={`
-              overflow-hidden
-              transition-all duration-500 ease-in-out
-              ${openCategories
-                ? "max-h-[3000px] opacity-100 scale-100"
-                : "max-h-0 opacity-0 scale-[0.98]"}
-            `}
-          >
-            <div className="flex flex-col gap-2 pt-2">
-              {categoriesArray.map((cat) => (
-                <SortableCategory
-                  key={cat.id}
-                  cat={cat}
-                  editingId={editingId}
-                  tempName={tempName}
-                  setTempName={setTempName}
-                  saveEdit={saveEdit}
-                  startEditing={startEditing}
-                  toggleAvailability={toggleAvailability}
-                  setPopup={setPopup}
+            {/* زر عرض الأقسام */}
+            <button
+              onClick={() => setOpenCategories((p) => !p)}
+              className="w-full mb-6 flex items-center justify-between px-5 py-3.5 bg-muted/50 border border-transparent rounded-xl font-bold hover:bg-muted/80 transition shadow-sm hover:border-border"
+            >
+              <span className="text-foreground">عرض الأقسام</span>
+
+              <div className="flex items-center gap-3">
+                <span className="bg-primary text-primary-foreground font-medium text-xs px-2.5 py-0.5 rounded-full shadow-sm">
+                  {categoriesArray.length}
+                </span>
+
+                <HiChevronDown
+                  className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${openCategories ? "rotate-180" : "rotate-0"
+                    }`}
                 />
-              ))}
+              </div>
+            </button>
+
+            {/* Accordion Animation */}
+            <div
+              className={`overflow-hidden transition-all duration-500 ease-in-out ${openCategories
+                ? "max-h-[3000px] opacity-100 scale-100"
+                : "max-h-0 opacity-0 scale-[0.98]"
+                }`}
+            >
+              <div className="flex flex-col gap-2 pt-2">
+                {categoriesArray.map((cat) => (
+                  <SortableCategory
+                    key={cat.id}
+                    cat={cat}
+                    editingId={editingId}
+                    tempName={tempName}
+                    setTempName={setTempName}
+                    saveEdit={saveEdit}
+                    startEditing={startEditing}
+                    toggleAvailability={toggleAvailability}
+                    setPopup={setPopup}
+                    openIconPicker={setIconPickerCatId}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </SortableContext>
-    </DndContext>
+        </SortableContext>
+      </DndContext>
+
+      {/* Icon Picker Overlay */}
+      {iconPickerCatId && (
+        <IconPicker selectIcon={selectIcon} close={() => setIconPickerCatId(null)} />
+      )}
+    </>
   );
 };
 

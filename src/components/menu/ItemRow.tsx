@@ -1,21 +1,23 @@
 import { type Item } from "./Menu";
+import React from "react";
 import { useState } from "react";
 import { useCart } from "../../context/CartContext";
 import { FaCheck, FaSearchPlus } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "../../lib/utils";
+import { Modal } from "../ui/modal";
 
 interface Props {
   item: Item;
   orderSystem: boolean;
 }
 
-export default function ItemRow({ item, orderSystem }: Props) {
+const ItemRow = React.memo(function ItemRow({ item, orderSystem }: Props) {
   const prices = String(item.price).split(",");
   const unavailable = item.visible === false;
 
   const { addItem } = useCart();
-
   const [addedPrice, setAddedPrice] = useState<number | null>(null);
-  const [showToast, setShowToast] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const hasIngredients = !!item.ingredients;
@@ -23,209 +25,128 @@ export default function ItemRow({ item, orderSystem }: Props) {
   const handleAdd = (price: number) => {
     addItem(item, price);
     setAddedPrice(price);
-    setShowToast(true);
-
     setTimeout(() => {
       setAddedPrice(null);
-      setShowToast(false);
-    }, 1000);
+    }, 1200);
   };
 
   return (
-    <div
-      className={`
-        relative w-full h-full
-        ${unavailable ? "opacity-60" : ""}
-      `}
-    >
-      {/* ================= Card ================= */}
-      <div
-        className="
-          relative flex flex-col h-full
-          rounded-2xl overflow-hidden
-          bg-white
-          border border-[#B22271]/30
-          shadow-xl shadow-[#B22271]/30
-          transition-all duration-500
-          hover:-translate-y-1
-          active:scale-[0.98]
-          font-[Almarai] font-bold
-        "
+    <>
+      <motion.div
+        whileHover={!unavailable ? { y: -4, transition: { duration: 0.2 } } : {}}
+        className={cn(
+          "relative flex flex-col h-full w-full rounded-xl overflow-hidden bg-card border border-border shadow-sm transition-shadow hover:shadow-md",
+          unavailable && "opacity-60 grayscale-[0.5]"
+        )}
       >
-        {/* ================= Image ================= */}
+        {/* Image Section */}
         <div
-          className="
-            relative w-full h-40 sm:h-44
-            overflow-hidden cursor-pointer group
-          "
+          className="relative w-full aspect-4/3 overflow-hidden cursor-pointer group bg-muted/30"
           onClick={() => setPreviewImage(item.image || "/logo_akila.png")}
         >
-          <img
+          <motion.img
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.4 }}
             src={item.image ? `/images/${item.image}` : "/logo_akila.png"}
             alt={item.name}
             loading="lazy"
-            className="
-              w-full h-full object-cover
-              transition-transform duration-700
-              group-hover:scale-110
-            "
+            className="w-full h-full object-cover"
             onError={(e) => {
               e.currentTarget.src = "/logo_akila.png";
             }}
           />
-
-          {/* Overlay */}
-
-
-          {/* Zoom Icon */}
-          <div
-            className="
-              absolute bottom-2 right-2
-              bg-white/90 text-[#B22271]
-              p-2 rounded-full shadow
-              opacity-0 group-hover:opacity-100
-              transition
-            "
-          >
-            <FaSearchPlus />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+          <div className="absolute bottom-2 right-2 bg-white/90 text-[#B22271] p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-md">
+            <FaSearchPlus className="w-3 h-3" />
           </div>
         </div>
 
-        {/* ================= Content ================= */}
-        <div className="p-3 flex flex-col gap-1 flex-1 -mt-2">
-          {/* Name */}
-          <h3
-            className={`
-              text-center text-xl md:text-2xl font-extrabold
-              ${unavailable
-                ? "line-through text-gray-400"
-                : "text-[#B22271]"
-              }
-            `}
-          >
+        {/* Content Section */}
+        <div className="p-4 flex flex-col gap-2 flex-1 relative z-10 bg-white">
+          <h3 className={cn("text-lg md:text-xl font-bold leading-tight", unavailable ? "line-through text-muted-foreground" : "text-foreground")}>
             {item.name}
           </h3>
 
-          {/* Ingredients */}
           {hasIngredients && (
-            <p
-              className={`
-                text-xs text-right text-gray-600 line-clamp-2
-                ${unavailable ? "line-through text-gray-400" : ""}
-              `}
-            >
+            <p className={cn("text-xs text-muted-foreground line-clamp-2 leading-relaxed flex-1")}>
               {item.ingredients}
             </p>
           )}
 
-          {/* ================= Prices ================= */}
-          <div className="mt-auto flex flex-col gap-2">
+          {/* Pricing & Add to Cart */}
+          <div className="mt-auto pt-4 flex flex-col gap-2">
             {orderSystem ? (
               prices.map((p) => {
                 const price = Number(p.trim());
                 const isAdded = addedPrice === price;
 
                 return (
-                  <div
-                    key={price}
-                    className={`
-                      flex items-center justify-between
-                      px-3 py-2 rounded-xl
-                      bg-white/90
-                      border border-[#B22271]/30
-                      transition
-                      ${unavailable ? "opacity-50 line-through" : ""}
-                    `}
-                  >
-                    <span className="text-lg font-extrabold text-[#b3aa07]">
-                      {price}₪
+                  <div key={price} className="flex items-center justify-between mt-1">
+                    <span className="text-base font-bold text-[#b3aa07]">
+                      {price} <span className="text-xs">₪</span>
                     </span>
-
                     {!unavailable && (
-                      <button
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => handleAdd(price)}
-                        className={`
-                          w-8 h-8 flex items-center justify-center
-                          rounded-lg text-white font-bold
-                          transition-all duration-300
-                          active:scale-90
-                          ${isAdded
-                            ? "bg-[#B22271] text-xl"
-                            : "bg-[#B22271]/90 hover:scale-110"
-                          }
-                        `}
-                      >
-                        {isAdded ? (
-                          <FaCheck className="animate-pulse" />
-                        ) : (
-                          <span className="text-xl">+</span>
+                        className={cn(
+                          "flex items-center justify-center w-8 h-8 rounded-full shadow-sm transition-colors",
+                          isAdded ? "bg-green-500 text-white" : "bg-[#B22271] text-white hover:bg-[#B22271]/90"
                         )}
-                      </button>
+                      >
+                        <AnimatePresence mode="wait">
+                          {isAdded ? (
+                            <motion.div
+                              key="check"
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                            >
+                              <FaCheck className="w-3 h-3" />
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="plus"
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="text-lg leading-none"
+                            >
+                              +
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.button>
                     )}
                   </div>
                 );
               })
             ) : (
-              <p
-                className={`
-                  text-center text-md font-bold text-[#b3aa07]
-                  ${unavailable ? "line-through text-gray-400" : ""}
-                `}
-              >
-                {prices.map((p) => p.trim() + "₪").join(" | ")}
+              <p className={cn("text-base font-bold text-[#b3aa07]", unavailable && "line-through text-muted-foreground")}>
+                {prices.map((p) => p.trim() + " ₪").join(" | ")}
               </p>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* ================= Toast ================= */}
-      {showToast && (
-        <div
-          className="
-            absolute top-2 left-1/2 -translate-x-1/2
-            bg-[#B22271]
-            text-white font-bold
-            px-4 py-1.5 rounded-xl
-            shadow-lg
-            flex items-center gap-2
-            animate-toast-show
-            pointer-events-none
-            z-50
-          "
-        >
-          <FaCheck className="w-4 h-4" />
-          <span className="text-xs">تمت الإضافة</span>
-        </div>
-      )}
-
-      {/* ================= Image Preview Modal ================= */}
-      {previewImage && (
-        <div
-          className="
-            fixed inset-0 z-999
-            bg-black/80
-            flex items-center justify-center
-            p-4
-            animate-fade-in
-          "
-          onClick={() => setPreviewImage(null)}
-        >
-          <img
-            src={
-              previewImage.startsWith("/")
-                ? previewImage
-                : `/images/${previewImage}`
-            }
-            className="
-              max-w-full max-h-[90vh]
-              rounded-2xl
-              shadow-2xl
-              animate-scale-in
-            "
-          />
-        </div>
-      )}
-    </div>
+      {/* Image Modal using premium generic modal */}
+      <Modal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        className="max-w-md p-1 bg-transparent border-none shadow-none"
+      >
+        {previewImage && (
+          <div className="relative">
+            <img
+              src={previewImage.startsWith("/") ? previewImage : `/images/${previewImage}`}
+              alt={item.name}
+              className="w-full h-auto rounded-xl shadow-2xl"
+            />
+          </div>
+        )}
+      </Modal>
+    </>
   );
-}
+});
+export default ItemRow;

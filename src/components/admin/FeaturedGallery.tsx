@@ -41,13 +41,13 @@ const FeaturedGallery: React.FC<Props> = ({
                                 type="button"
                                 onClick={() => onSelect(img)}
                                 className={`
-    relative rounded-lg overflow-hidden
-    border-2 transition
-    ${selectedImage === img
+                                relative rounded-lg overflow-hidden
+                                border-2 transition
+                                ${selectedImage === img
                                         ? "border-[#B22271]"
                                         : "border-transparent hover:border-gray-300"
                                     }
-  `}
+                                                        `}
                             >
                                 <div className="bg-black">
                                     <img
@@ -60,12 +60,12 @@ const FeaturedGallery: React.FC<Props> = ({
                                 {/* اسم الصورة */}
                                 <span
                                     className="
-      block text-[10px] sm:text-xs
-      text-center text-gray-700
-      bg-white
-      px-1 py-0.5
-      truncate
-    "
+                                            block text-[10px] sm:text-xs
+                                            text-center text-gray-700
+                                            bg-white
+                                            px-1 py-0.5
+                                            truncate
+                                            "
                                     title={img}
                                 >
                                     {img}

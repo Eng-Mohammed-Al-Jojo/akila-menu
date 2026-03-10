@@ -439,8 +439,8 @@ export default function Admin() {
         )}
         {/* POPUP إعادة تعيين كلمة المرور */}
         {resetPasswordPopup && (
-          <div className="fixed inset-0 bg-[#231F20]/80 flex justify-center items-center z-50 ">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm border-4 border-[#B22271]">
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+            <div className="bg-card rounded-2xl shadow-xl w-full max-w-sm border border-border flex flex-col p-6">
               {/* الشعار */}
               <div className="flex justify-center mb-4">
                 <img src="/hamada.png" alt="Logo" className="w-24 h-24 object-contain" />
@@ -481,10 +481,7 @@ export default function Admin() {
 
         {/* POPUP تسجيل الدخول */}
         {!resetPasswordPopup && (
-          <div
-            className="bg-white p-6 rounded-3xl w-full max-w-xs border-4 flex flex-col items-center"
-            style={{ borderColor: "#B22271" }}
-          >
+          <div className="bg-card p-8 rounded-2xl w-full max-w-md border border-border shadow-xl flex flex-col items-center">
             {toast && (
               <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#B22271] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
                 {toast}
@@ -530,7 +527,7 @@ export default function Admin() {
 
   // ================= ADMIN PANEL =================
   return (
-    <div className="min-h-screen w-full bg-[#231F20] flex justify-center py-5 md:p-6" dir="rtl">
+    <div className="min-h-screen w-full bg-background flex justify-center py-5 md:py-10" dir="rtl">
       {toast && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#B22271] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
           {toast}
@@ -547,10 +544,10 @@ export default function Admin() {
       {/* Inputs مخفية للملفات */}
       <input type="file" accept=".xlsx" id="excelUpload" hidden onChange={importFromExcel} />
 
-      <div className="w-full max-w-7xl px-8 sm:px-8 md:px-24">
-        <div className="flex justify-between items-center mb-6 flex-wrap">
-          <h1 className="text-3xl font-extrabold text-[#B22271] mb-4">لوحة تحكم Akila</h1>
-          <div className="flex gap-2 flex-wrap">
+      <div className="w-full max-w-6xl px-4 md:px-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 pb-6 border-b border-border">
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight font-[Almarai]">لوحة تحكم النظام</h1>
+          <div className="flex gap-3 flex-wrap">
             {/* Order Settings Button */}
             <button
               onClick={() => setShowOrderSettings(true)}
